@@ -6,6 +6,8 @@ import connectDB from './lib/db.js';
 import colors from 'colors';
 import path from 'path';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import { ENV } from './lib/env.js';
 dotenv.config();
 
 const app = express();
@@ -13,6 +15,10 @@ const __dirname = path.resolve();
 const PORT = process.env.PORT || 5000;
 app.use(express.json()); // req.body
 app.use(cookieParser());
+app.use(cors({
+    origin: ENV.CLIENT_URL,
+    credentials: true,
+}));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);

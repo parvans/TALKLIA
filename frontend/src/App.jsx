@@ -1,29 +1,33 @@
-import React from 'react'
-import { Route, Routes } from 'react-router-dom'
+import React, { useEffect } from 'react'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import SignUp from './view/SignUp'
 import Login from './view/Login'
 import Chat from './view/Chat'
 import { useDispatch, useSelector } from 'react-redux'
-import { login } from './store/slices/authSlice.js'
+import { checkAuth } from './store/slices/authSlice.js'
+import PageLoader from './components/PageLoader.jsx'
+import { Toaster } from 'react-hot-toast';
 
 export default function App() {
   const dispatch = useDispatch()
-  const { authUser, isLoggedIn, isLoading } = useSelector((state) => state.auth)
-  console.log(authUser);
-  console.log(isLoggedIn);
-  console.log(isLoading);
-  console.log(error);
+  const { authUser, isCheckingAuth } = useSelector((state) => state.auth)
   
+  useEffect(()=>{
+    dispatch(checkAuth());
+  },[dispatch]);
+
+  console.log("Auth User in App.jsx:",authUser);
+
+  if(isCheckingAuth) return <PageLoader/>
   return (
-    <div className="min-h-screen bg-gradient-radial from-cyan-500 to-blue-500
-    relative flex items-center justify-center p-4 overflow-hidden">
+    <div className="min-h-screen bg-gradient-radial from-cyan-500 to-blue-500 relative flex items-center justify-center p-4 overflow-hidden">
       {/* decorator */}
-      <h3 onClick={() => dispatch(login())}>Login</h3>
       <Routes>
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Chat />} />
+        <Route path="/signup" element={authUser ? <Navigate to="/" /> : <SignUp />} />
+        <Route path="/login" element={authUser ? <Navigate to="/" /> : <Login />} />
+        <Route path="/" element={authUser ? <Chat /> : <Navigate to="/login" />} />
       </Routes>
+      <Toaster position="top-right" reverseOrder={false} />
     </div>
   )
 }
