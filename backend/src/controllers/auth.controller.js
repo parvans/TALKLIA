@@ -1,3 +1,4 @@
+import cloudinary from "../lib/cloudinary.js";
 import { generateToken } from "../lib/utils.js";
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
@@ -82,4 +83,36 @@ export const logout = (_, res) => {
     });
 
     res.status(200).json({ message: 'Logged out successfully' });
+}
+
+export const updateProfile = async(req, res)=> {
+    try {
+        const { profilePicture } = req.body;
+
+        if(!profilePicture) return res.status(400).json({ message: 'Profile picture is required' });
+        const userId = req.user._id;
+
+        // distroy the previous picture from cloudinary
+        const user = await User.findById(userId);
+        if(user.profilePicture){
+            const publicId = user.profilePicture.split('/').pop().split('.')[0];
+            await cloudinary.uploader.destroy(publicId);
+        }
+
+        const uploadRes = await cloudinary.uploader.upload(profilePicture,{
+            folder: 'profile_pictures',
+            width: 150,
+            height: 150,
+            crop: 'fill',
+            gravity: 'face'
+        });
+
+        const updatedUser = await User.findByIdAndUpdate(userId, {
+            profilePicture: uploadRes.secure_url
+        }, { new: true });
+        
+        res.status(200).json(updatedUser);
+    } catch (error) {
+        
+    }
 }
