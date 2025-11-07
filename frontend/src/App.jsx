@@ -1,35 +1,29 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react'
+import { Route, Routes } from 'react-router-dom'
+import SignUp from './view/SignUp'
+import Login from './view/Login'
+import Chat from './view/Chat'
+import { useDispatch, useSelector } from 'react-redux'
+import { login } from './store/slices/authSlice.js'
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function App() {
+  const dispatch = useDispatch()
+  const { authUser, isLoggedIn, isLoading } = useSelector((state) => state.auth)
+  console.log(authUser);
+  console.log(isLoggedIn);
+  console.log(isLoading);
+  console.log(error);
+  
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="min-h-screen bg-gradient-radial from-cyan-500 to-blue-500
+    relative flex items-center justify-center p-4 overflow-hidden">
+      {/* decorator */}
+      <h3 onClick={() => dispatch(login())}>Login</h3>
+      <Routes>
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Chat />} />
+      </Routes>
+    </div>
   )
 }
-
-export default App
