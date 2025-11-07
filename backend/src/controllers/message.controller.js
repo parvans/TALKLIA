@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import cloudinary from "../lib/cloudinary.js";
 import Message from "../models/Message.js";
 import User from "../models/User.js";
@@ -37,6 +38,19 @@ export const sendMessage = async(req, res) => {
         const myId = req.user._id;
         const { id } = req.params;
         const { content, image } = req.body;
+
+        const validateId = mongoose.Types.ObjectId;
+
+        if(!content && !image) return res.status(400).json({ message: "Content or Image is required" });
+
+        if(myId.equals(id)) return res.status(400).json({ message: "You cannot send a message to yourself" });
+        
+        const receiverExist = await User.findById({_id: id});
+        if(!receiverExist) return res.status(404).json({ message: "Receiver not found" });
+        
+        if(!validateId.isValid(id)){
+            return res.status(400).json({ message: "Invalid receiver ID" });
+        }
 
         let ImageURL;
         if(image){
