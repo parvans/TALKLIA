@@ -5,6 +5,7 @@ import { signup } from '../store/slices/authSlice';
 import BorderAnimatedContainer from '../components/BorderAnimatedContainer';
 import { LoaderIcon, LockIcon, MailIcon, MessageCircleIcon, UserIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import chatImg from '../assets/images/chat.png';
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -50,10 +51,10 @@ export default function SignUp() {
 
                       <input
                         type="text"
-                        value={formData.fullName}
-                        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                        value={formData.username}
+                        onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                         className="input"
-                        placeholder="John Doe"
+                        placeholder="Parvan S"
                       />
                     </div>
                   </div>
@@ -69,7 +70,7 @@ export default function SignUp() {
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         className="input"
-                        placeholder="johndoe@gmail.com"
+                        placeholder="parvan@gmail.com"
                       />
                     </div>
                   </div>
@@ -112,7 +113,7 @@ export default function SignUp() {
             <div className="hidden md:w-1/2 md:flex items-center justify-center p-6 bg-gradient-to-bl from-slate-800/20 to-transparent">
               <div>
                 <img
-                  src="https://tailwindui.com/img/illustrations/signup-illustration.png"
+                  src={chatImg}
                   alt="People using mobile devices"
                   className="w-full h-auto object-contain"
                 />
