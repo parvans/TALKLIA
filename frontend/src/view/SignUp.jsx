@@ -13,6 +13,7 @@ export default function SignUp() {
     email: '',
     password: '',
   });
+  const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
   const { isSigningUp } = useSelector((state) => state.auth);
   const handleSubmit = (e) => {
@@ -82,12 +83,19 @@ export default function SignUp() {
                       <LockIcon className="auth-input-icon" />
 
                       <input
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         className="input"
                         placeholder="Enter your password"
                       />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? 'Hide' : 'Show'}
+                      </button>
                     </div>
                   </div>
 
