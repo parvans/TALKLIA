@@ -51,6 +51,20 @@ export const logout = createAsyncThunk('auth/logout', async (_, thunkAPI) => {
   }
 });
 
+// update Profile
+
+export const updateProfile = createAsyncThunk('auth/update-profile', async (formData, thunkAPI) => {
+  try {
+    const res = await axiosInstance.put('/auth/update-profile', formData);
+    toast.success('Profile updated successfully!');
+    return res.data;
+  } catch (error) {
+    toast.error(error.response?.data?.message || 'Update failed. Please try again.');
+    console.log("Error in update Profile:", error);
+    return thunkAPI.rejectWithValue(error.response?.data);
+  }
+})
+
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
@@ -114,6 +128,22 @@ const authSlice = createSlice({
       })
       .addCase(logout.rejected, (state) => {
         state.isLoggingOut = false;
+      });
+
+    // updateProfile
+    builder
+      .addCase(updateProfile.pending, () => {
+        // state.isUpdatingProfile = true;
+        console.log('Updating profile...');
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        // state.isUpdatingProfile = false;
+        console.log('Profile updated successfully!');
+        state.authUser = action.payload;
+      })
+      .addCase(updateProfile.rejected, () => {
+        // state.isUpdatingProfile = false;
+        console.error('Update failed. Please try again.');
       });
 
   },

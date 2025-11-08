@@ -32,7 +32,7 @@ const chatSlice = createSlice({
         selectedUser: null,
         isUsersLoading: false,
         isMessagesLoading: false,
-        isToneEnabled: localStorage.getItem('isToneEnabled') === true
+        isToneEnabled: JSON.parse(localStorage.getItem('isToneEnabled')) === true
     },
     reducers: {
         toggleTone: (state) => {
