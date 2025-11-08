@@ -1,14 +1,14 @@
 import React, { useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import avatarImg from '../assets/images/avatar.png';
-import {LogOutIcon, Volume2Icon, VolumeOffIcon} from 'lucide-react';
+import {LoaderIcon, LogOutIcon, Volume2Icon, VolumeOffIcon} from 'lucide-react';
 import { toggleTone } from '../store/slices/chatSlice';
 import { updateProfile } from '../store/slices/authSlice';
 
 const mouseClickSound = new Audio('/sounds/mouse-click.mp3');
 export default function ProfileHeader() {
   const dispatch = useDispatch();
-  const { authUser } = useSelector(state => state.auth);
+  const { authUser, isUpdatingProfile } = useSelector(state => state.auth);
   const { isToneEnabled } = useSelector(state => state.chat);
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -48,6 +48,13 @@ export default function ProfileHeader() {
                 <span className="text-white text-xs">Change</span>
 
               </div>
+
+              {isUpdatingProfile && 
+              (
+                <div className="absolute inset-0 bg-black/50 opacity-100 rounded-3xl flex items-center justify-center transition-opacity">
+                  <LoaderIcon className="size-10 animate-spin" />
+                </div>
+              )}
 
 
             </button>

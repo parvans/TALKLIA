@@ -72,6 +72,7 @@ const authSlice = createSlice({
     isCheckingAuth: true,
     isSigningUp: false,
     isLoggingIn: false,
+    isUpdatingProfile: false
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -132,18 +133,15 @@ const authSlice = createSlice({
 
     // updateProfile
     builder
-      .addCase(updateProfile.pending, () => {
-        // state.isUpdatingProfile = true;
-        console.log('Updating profile...');
+      .addCase(updateProfile.pending, (state) => {
+        state.isUpdatingProfile = true;
       })
       .addCase(updateProfile.fulfilled, (state, action) => {
-        // state.isUpdatingProfile = false;
-        console.log('Profile updated successfully!');
+        state.isUpdatingProfile = false;
         state.authUser = action.payload;
       })
-      .addCase(updateProfile.rejected, () => {
-        // state.isUpdatingProfile = false;
-        console.error('Update failed. Please try again.');
+      .addCase(updateProfile.rejected, (state) => {
+        state.isUpdatingProfile = false;
       });
 
   },
