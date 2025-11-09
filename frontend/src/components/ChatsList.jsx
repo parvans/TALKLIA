@@ -20,7 +20,7 @@ export default function ChatsList() {
     {
       chats.map((chat) => (
         <ChatItem 
-          key={chat._id} 
+          key={chat.chatUser._id} 
           chat={chat}
           type="chat"
         />

@@ -4,6 +4,7 @@ import avatarImg from '../assets/images/avatar.png';
 import {LoaderIcon, LogOutIcon, Volume2Icon, VolumeOffIcon} from 'lucide-react';
 import { toggleTone } from '../store/slices/chatSlice';
 import { logout, updateProfile } from '../store/slices/authSlice';
+import toast from 'react-hot-toast';
 
 const mouseClickSound = new Audio('/sounds/mouse-click.mp3');
 export default function ProfileHeader() {
@@ -16,7 +17,10 @@ export default function ProfileHeader() {
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if(!file) return;
+    if(!file.type.startsWith('image/')){
+      toast.error('Please select an image file.');
+      return;
+    }
 
     const reader = new FileReader();
     reader.readAsDataURL(file);

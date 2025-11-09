@@ -41,11 +41,11 @@ export const sendMessage = async(req, res) => {
 
         const validateId = mongoose.Types.ObjectId;
 
-        if(!content && !image) return res.status(400).json({ message: "Content or Image is required" });
+        if(!content || !image) return res.status(400).json({ message: "Content or Image is required" });
 
         if(myId.equals(id)) return res.status(400).json({ message: "You cannot send a message to yourself" });
         
-        const receiverExist = await User.findById({_id: id});
+        const receiverExist = await User.exists({_id: id});
         if(!receiverExist) return res.status(404).json({ message: "Receiver not found" });
         
         if(!validateId.isValid(id)){
@@ -73,18 +73,61 @@ export const sendMessage = async(req, res) => {
     }
 }
 
-export const getChats = async(req, res) =>{
-    try {
-        const myId = req.user._id;
-        const messages = await Message.find({ 
-            $or: [
-                { senderId: myId },
-                { receiverId: myId }
+export const getChats = async (req, res) => {
+  try {
+    const myId = req.user._id;
+
+    const chats = await Message.aggregate([
+      {
+        $match: {
+          $or: [
+            { senderId: myId },
+            { receiverId: myId }
+          ]
+        }
+      },
+      { $sort: { createdAt: -1 } },
+      {
+        $group: {
+          _id: {
+            $cond: [
+              { $eq: ["$senderId", myId] },
+              "$receiverId",
+              "$senderId"
             ]
-        }).populate('sender', 'username profilePicture').populate('receiver', 'username profilePicture');
-        res.status(200).json(messages);
-    } catch (error) {
-        console.log("Error in getChats:", error);
-        res.status(500).json({ message: "Internal Server Error" });
-    }
-}
+          },
+          lastMessage: { $first: "$$ROOT" }
+        }
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "user"
+        }
+      },
+      {
+        $unwind: "$user"
+      },
+      {
+        $project: {
+          _id: 0,
+          chatUser: {
+            _id: "$user._id",
+            username: "$user.username",
+            profilePicture: "$user.profilePicture"
+          },
+          content: "$lastMessage.content",
+          createdAt: "$lastMessage.createdAt"
+        }
+      },
+      { $sort: { createdAt: -1 } }
+    ]);
+
+    res.status(200).json(chats);
+  } catch (error) {
+    console.error("Error in getChats:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

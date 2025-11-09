@@ -12,7 +12,7 @@ export default function ChatItem({ chat, type }) {
   if (type === "contact") {
     chatUser = chat;
   } else {
-    chatUser = chat.senderId === authUser?._id ? chat.receiver : chat.sender;
+    chatUser = chat.chatUser
   }
 
   const chatImg = chatUser?.profilePicture;
