@@ -72,3 +72,19 @@ export const sendMessage = async(req, res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 }
+
+export const getChats = async(req, res) =>{
+    try {
+        const myId = req.user._id;
+        const messages = await Message.find({ 
+            $or: [
+                { senderId: myId },
+                { receiverId: myId }
+            ]
+        }).populate('sender', 'username profilePicture').populate('receiver', 'username profilePicture');
+        res.status(200).json(messages);
+    } catch (error) {
+        console.log("Error in getChats:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+}

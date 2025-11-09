@@ -16,8 +16,6 @@ export default function App() {
     dispatch(checkAuth());
   },[dispatch]);
 
-  console.log("Auth User in App.jsx:",authUser);
-
   if(isCheckingAuth) return <PageLoader/>
   return (
     <div className="min-h-screen bg-gradient-radial from-cyan-500 to-blue-500 relative flex items-center justify-center p-4 overflow-hidden">

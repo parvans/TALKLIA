@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { axiosInstance } from "../../lib/axios";
 
 
 export const fetchAllContacts = createAsyncThunk('messages/contacts', async (_, thunkAPI) => {
@@ -39,8 +40,12 @@ const chatSlice = createSlice({
             state.isToneEnabled = !state.isToneEnabled;
             localStorage.setItem('isToneEnabled', state.isToneEnabled);
         },
-        setActiveTab: (state, action) => state.activeTab = action.payload,
-        setSelectedUser: (state, action) => state.selectedUser = action.payload,
+        setActiveTab: (state, action) => {
+          state.activeTab = action.payload;
+        },
+        setSelectedUser: (state, action) => {
+          state.selectedUser = action.payload;
+        },
     },
     extraReducers: (builder) => {
         // fetchAllContacts

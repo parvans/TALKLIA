@@ -12,9 +12,7 @@ export default function ProfileHeader() {
   const { isToneEnabled } = useSelector(state => state.chat);
   const [selectedImage, setSelectedImage] = useState(null);
 
-  const fileInput = useRef(null);
-  console.log(isToneEnabled);
-  
+  const fileInput = useRef(null);  
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];

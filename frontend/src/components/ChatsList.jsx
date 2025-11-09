@@ -1,7 +1,31 @@
-import React from 'react'
+import React, { useEffect } from 'react'
+import UserLoadingSkeleton from './UserLoadingSkeleton'
+import { useDispatch, useSelector } from 'react-redux';
+import { getChats, setSelectedUser } from '../store/slices/chatSlice';
+import NoFound from './NoFound';
+import ChatItem from './ChatItem';
 
 export default function ChatsList() {
+  const dispatch = useDispatch();
+  const { isUsersLoading, chats, activeTab } = useSelector((state) => state.chat);
+
+  useEffect(()=>{
+    dispatch(getChats());
+  },[dispatch]);
+
+  if(isUsersLoading) return <UserLoadingSkeleton />
+  if(chats.length === 0) return <NoFound tab={activeTab} />
   return (
-    <div>ChatsList</div>
+    <>
+    {
+      chats.map((chat) => (
+        <ChatItem 
+          key={chat._id} 
+          chat={chat}
+          type="chat"
+        />
+      ))
+    }
+    </>
   )
 }
