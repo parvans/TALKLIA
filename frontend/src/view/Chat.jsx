@@ -12,24 +12,34 @@ export default function Chat() {
   const dispatch = useDispatch();
   const { activeTab, selectedUser } = useSelector((state) => state.chat);
   return (
-    <div className="relative w-full max-w-6xl h-[800px]">
-      <BorderAnimatedContainer>
-        {/* LEFT */}
-        <div className="w-80 bg-slate-900/60 backdrop-blur-sm flex flex-col">
-          <ProfileHeader />
-          <ActiveTabSwitch />
+    <div className="fixed inset-0 flex items-center justify-center">
+      <div className="w-full max-w-6xl h-screen">
+        <BorderAnimatedContainer>
+          {/* LEFT */}
+          <div 
+          className={`w-full md:w-80 bg-slate-900/60 backdrop-blur-sm flex flex-col
+              ${selectedUser ? 'hidden' : 'flex'} md:flex
+            `}
+          >
+            <ProfileHeader />
+            <ActiveTabSwitch />
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {activeTab === 'chats' ? <ChatsList /> : <ContactsList />}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {activeTab === 'chats' ? <ChatsList /> : <ContactsList />}
+            </div>
           </div>
-        </div>
 
-        {/* RIGHT */}
-        <div className="flex-1 flex flex-col bg-slate-800/60 backdrop-blur-sm">
-          {selectedUser ? <ChatContainer /> : <WelcomeScreen />}
-        </div>
-        
-      </BorderAnimatedContainer>
+          {/* RIGHT */}
+          <div 
+           className={`w-full md:flex-1 flex flex-col bg-slate-800/60 backdrop-blur-sm
+              ${selectedUser ? 'flex' : 'hidden'} md:flex
+            `}
+          >
+            {selectedUser ? <ChatContainer /> : <WelcomeScreen />}
+          </div>
+          
+        </BorderAnimatedContainer>
+      </div>
     </div>
   )
 }

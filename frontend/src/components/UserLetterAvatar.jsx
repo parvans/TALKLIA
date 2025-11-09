@@ -18,7 +18,7 @@ export default function UserLetterAvatar({ name }) {
     };
     const getColLet =getAvatarColor(name);
     return (
-        <div className='avatar placeholder'>
+        <div className='avatar placeholder online'>
             <div className='text-white w-10 h-10 rounded-full flex items-center justify-center' style={{ backgroundColor: getColLet.color }}>
                 <span className="text-xl">{getColLet.letter}</span>
             </div>

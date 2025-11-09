@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import avatarImg from '../assets/images/avatar.png';
 import {LoaderIcon, LogOutIcon, Volume2Icon, VolumeOffIcon} from 'lucide-react';
 import { toggleTone } from '../store/slices/chatSlice';
-import { updateProfile } from '../store/slices/authSlice';
+import { logout, updateProfile } from '../store/slices/authSlice';
 
 const mouseClickSound = new Audio('/sounds/mouse-click.mp3');
 export default function ProfileHeader() {
@@ -75,7 +75,10 @@ export default function ProfileHeader() {
           </div>
 
           <div className="flex gap-4 items-center">
-            <button className='text-slate-400 hover:text-slate-300 transition-colors'>
+            <button 
+            className='text-slate-400 hover:text-slate-300 transition-colors'
+            onClick={()=>dispatch(logout())}
+            >
               <LogOutIcon className="size-5" />
             </button>
 
