@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import UserLoadingSkeleton from './UserLoadingSkeleton'
 import { useDispatch, useSelector } from 'react-redux';
-import { getChats, setSelectedUser } from '../store/slices/chatSlice';
+import { fetchChats, setSelectedChat } from '../store/slices/chatSlice';
 import NoFound from './NoFound';
 import ChatItem from './ChatItem';
 
@@ -10,7 +10,7 @@ export default function ChatsList() {
   const { isUsersLoading, chats, activeTab } = useSelector((state) => state.chat);
 
   useEffect(()=>{
-    dispatch(getChats());
+    dispatch(fetchChats());
   },[dispatch]);
 
   if(isUsersLoading) return <UserLoadingSkeleton />
@@ -20,7 +20,7 @@ export default function ChatsList() {
     {
       chats.map((chat) => (
         <ChatItem 
-          key={chat.chatUser._id} 
+          key={chat._id} 
           chat={chat}
           type="chat"
         />

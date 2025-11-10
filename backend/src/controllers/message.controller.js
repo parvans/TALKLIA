@@ -2,11 +2,14 @@ import mongoose from "mongoose";
 import cloudinary from "../lib/cloudinary.js";
 import Message from "../models/Message.js";
 import User from "../models/User.js";
+import Chat from "../models/Chat.js";
 
 export const getAllContacts = async(req, res) => {
     try {
         const loggedUserId = req.user._id;
-        const filteredUsers = await User.find({ _id: { $ne: loggedUserId } }).select('-password');
+        const filteredUsers = await User.find({ _id: { $ne: loggedUserId } })
+        .select('-password');
+
         res.status(200).json(filteredUsers);
     } catch (error) {
         console.log("Error in getAllContacts:", error);
@@ -17,55 +20,76 @@ export const getAllContacts = async(req, res) => {
 
 export const getMessagesByUserId = async(req, res) => {
     try {
-        const myId = req.user._id;
-        const { id } = req.params;
-        const messages = await Message.find({
-            $or:[
-                { senderId: myId, receiverId: id },
-                { senderId: id, receiverId: myId }
-            ]
-        });
+      const { chatId } = req.params;
 
-        res.status(200).json(messages);
+      if (!mongoose.Types.ObjectId.isValid(chatId)) {
+        return res.status(400).json({ message: "Invalid chat ID" });
+      }
+
+      const messages = await Message.find({ chat: chatId })
+        .populate("sender", "username email profilePicture")
+        .populate("chat");
+
+      res.status(200).json(messages);
     } catch (error) {
-        console.log("Error in getMessagesByUserId:", error);
-        res.status(500).json({ message: "Internal Server Error" });
+      console.error("Error in getMessagesByChatId:", error);
+      res.status(500).json({ message: "Internal Server Error" });
     }
 }
 
 export const sendMessage = async(req, res) => {
     try {
-        const myId = req.user._id;
-        const { id } = req.params;
-        const { content, image } = req.body;
-
         const validateId = mongoose.Types.ObjectId;
+        const senderId = req.user._id;
+        const { chatId } = req.params;
+        const {content, image, messageType } = req.body;
 
-        if(!content || !image) return res.status(400).json({ message: "Content or Image is required" });
-
-        if(myId.equals(id)) return res.status(400).json({ message: "You cannot send a message to yourself" });
-        
-        const receiverExist = await User.exists({_id: id});
-        if(!receiverExist) return res.status(404).json({ message: "Receiver not found" });
-        
-        if(!validateId.isValid(id)){
-            return res.status(400).json({ message: "Invalid receiver ID" });
+        if (!validateId.isValid(chatId)) {
+          return res.status(400).json({ message: "Invalid chat ID" });
         }
 
+        if(!content && !image) return res.status(400).json({ message: "Content or Image is required" });
+
+        // if(myId.equals(id)) return res.status(400).json({ message: "You cannot send a message to yourself" });
+        
+        const chatExists = await Chat.findById(chatId);
+        if (!chatExists) {
+          return res.status(404).json({ message: "Chat not found" });
+        }
+        
         let ImageURL;
         if(image){
-            const uploadRes = await cloudinary.uploader.upload(image);
+            const uploadRes = await cloudinary.uploader.upload(image,{
+              folder: "chat_app/messages",
+            });
             ImageURL = uploadRes.secure_url; 
         }
 
         const newMessage = new Message({
-            senderId: myId,
-            receiverId: id,
+            sender: senderId,
+            chat: chatId,
             content,
-            image: ImageURL
+            image: ImageURL,
+            messageType: messageType || (image ? "image" : "text"),
+            status: "sent"
+        });
+        await newMessage.save();
+
+        await Chat.findByIdAndUpdate(chatId, { 
+          latestMessage: newMessage._id,
+          lastActivity: new Date(),
         });
 
-        await newMessage.save();
+        const fullMessage = await Message.findById(newMessage._id)
+          .populate("sender", "username email profilePicture")
+          .populate({
+            path: "chat",
+            populate: {
+              path: "users",
+              select: "username email profilePicture",
+            },
+        });
+
         res.status(201).json(newMessage);
     } catch (error) {
         console.log("Error in sendMessage:", error);
@@ -74,56 +98,17 @@ export const sendMessage = async(req, res) => {
 }
 
 export const getChats = async (req, res) => {
-  try {
-    const myId = req.user._id;
+ try {
+    const userId = req.user._id;
 
-    const chats = await Message.aggregate([
-      {
-        $match: {
-          $or: [
-            { senderId: myId },
-            { receiverId: myId }
-          ]
-        }
-      },
-      { $sort: { createdAt: -1 } },
-      {
-        $group: {
-          _id: {
-            $cond: [
-              { $eq: ["$senderId", myId] },
-              "$receiverId",
-              "$senderId"
-            ]
-          },
-          lastMessage: { $first: "$$ROOT" }
-        }
-      },
-      {
-        $lookup: {
-          from: "users",
-          localField: "_id",
-          foreignField: "_id",
-          as: "user"
-        }
-      },
-      {
-        $unwind: "$user"
-      },
-      {
-        $project: {
-          _id: 0,
-          chatUser: {
-            _id: "$user._id",
-            username: "$user.username",
-            profilePicture: "$user.profilePicture"
-          },
-          content: "$lastMessage.content",
-          createdAt: "$lastMessage.createdAt"
-        }
-      },
-      { $sort: { createdAt: -1 } }
-    ]);
+    const chats = await Chat.find({ users: { $elemMatch: { $eq: userId } } })
+      .populate("users", "username email profilePicture")
+      .populate("groupAdmin", "username email profilePicture")
+      .populate({
+        path: "latestMessage",
+        populate: { path: "sender", select: "username email profilePicture" },
+      })
+      .sort({ updatedAt: -1 });
 
     res.status(200).json(chats);
   } catch (error) {

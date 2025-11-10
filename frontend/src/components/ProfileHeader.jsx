@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 const mouseClickSound = new Audio('/sounds/mouse-click.mp3');
 export default function ProfileHeader() {
   const dispatch = useDispatch();
-  const { authUser, isUpdatingProfile } = useSelector(state => state.auth);
+  const { authUser, isUpdatingProfile, onlineUsers } = useSelector(state => state.auth);
   const { isToneEnabled } = useSelector(state => state.chat);
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -30,11 +30,12 @@ export default function ProfileHeader() {
       await dispatch(updateProfile({profilePicture: base64Image}));
     }
   }
+  
   return (
     <div className="p-6 border-b border-slate-700/60">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="avatar online">
+          <div className={`avatar ${onlineUsers?.includes(authUser._id) ? 'online' : 'offline'}`}>
             <button 
             className="size-14 rounded-full overflow-hidden relative-group border-2 border-slate-500/70 hover:border-slate-300/80 transition-border"
             onClick={() => fileInput.current.click()}

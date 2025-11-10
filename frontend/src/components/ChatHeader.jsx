@@ -2,16 +2,18 @@ import React, { useEffect } from 'react'
 import UserLetterAvatar from './UserLetterAvatar'
 import { ArrowLeft } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux';
-import { setSelectedUser } from '../store/slices/chatSlice';
+import { setSelectedChat } from '../store/slices/chatSlice';
 
 export default function ChatHeader({user}) {
     const dispatch = useDispatch();
-    const {selectedUser} = useSelector((state) => state.chat);
+    const { selectedChat } = useSelector((state) => state.chat);
+    const { authUser, onlineUsers } = useSelector((state) => state.auth);
+    const theUser = selectedChat?.users.find((u) => u._id !== authUser._id);
 
     useEffect(()=>{
         const hadleKeyPress = (e)=>{
             if(e.key === "Escape"){
-                dispatch(setSelectedUser(null));
+                dispatch(setSelectedChat(null));
             }
         }
 
@@ -19,30 +21,30 @@ export default function ChatHeader({user}) {
         return ()=>{
             window.removeEventListener("keydown", hadleKeyPress);
         }
-    },[selectedUser]);
+    },[selectedChat]);
   return (
    <div className="flex justify-between items-center bg-slate-800 p-4 border-b border-slate-700/60">
     
     <div className="flex items-center gap-3">
         <button 
         className="w-5 h5 text-slate-400 hover:text-slate-300 transition-colors"
-        onClick={()=>dispatch(setSelectedUser(null))}
+        onClick={()=>dispatch(setSelectedChat(null))}
         >
         <ArrowLeft className="w-6 h-6 text-slate-400" />
         </button>
-        { user?.profilePicture ?
-        (<div className="avatar online">
+        { theUser?.profilePicture ?
+        (<div className={`avatar ${onlineUsers?.includes(theUser._id) ? 'online' : 'offline'}`}>
             <div className="size-14 rounded-full overflow-hidden relative-group border-2 border-slate-500/70 hover:border-slate-300/80 transition-border">
                 <img 
-                src={user?.profilePicture || ""}
+                src={theUser?.profilePicture || ""}
                 alt="img"
                 className="w-full h-full object-cover"
                 />
             </div>
-        </div>):(<UserLetterAvatar name={user?.username} />)}
+        </div>):(<UserLetterAvatar user={theUser} />)}
         <div>
-            <h3 className="font-semibold text-slate-200">{user?.username}</h3>
-            <span className="text-xs text-slate-400">Online</span>
+            <h3 className="font-semibold text-slate-200">{theUser?.username}</h3>
+            <span className="text-xs text-slate-400">{onlineUsers?.includes(theUser._id) ? "Online" : "Offline"}</span>
         </div>
     </div>
     {/* <div className="flex items-center gap-3">

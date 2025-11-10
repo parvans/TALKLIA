@@ -10,7 +10,7 @@ import WelcomeScreen from '../components/WelcomeScreen';
 import ChatContainer from '../components/ChatContainer';
 export default function Chat() {
   const dispatch = useDispatch();
-  const { activeTab, selectedUser } = useSelector((state) => state.chat);
+  const { activeTab, selectedChat } = useSelector((state) => state.chat);
   return (
     <div className="fixed inset-0 flex items-center justify-center">
       <div className="w-full max-w-6xl h-screen">
@@ -18,7 +18,7 @@ export default function Chat() {
           {/* LEFT */}
           <div 
           className={`w-full md:w-80 bg-slate-900/60 backdrop-blur-sm flex flex-col
-              ${selectedUser ? 'hidden' : 'flex'} md:flex
+              ${selectedChat ? 'hidden' : 'flex'} md:flex
             `}
           >
             <ProfileHeader />
@@ -32,10 +32,10 @@ export default function Chat() {
           {/* RIGHT */}
           <div 
            className={`w-full md:flex-1 flex flex-col bg-slate-800/60 backdrop-blur-sm
-              ${selectedUser ? 'flex' : 'hidden'} md:flex
+              ${selectedChat ? 'flex' : 'hidden'} md:flex
             `}
           >
-            {selectedUser ? <ChatContainer /> : <WelcomeScreen />}
+            {selectedChat ? <ChatContainer /> : <WelcomeScreen />}
           </div>
           
         </BorderAnimatedContainer>

@@ -1,7 +1,7 @@
 import React from 'react'
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
-import { login } from '../store/slices/authSlice';
+import { connectSocket, login } from '../store/slices/authSlice';
 import BorderAnimatedContainer from '../components/BorderAnimatedContainer';
 import { LoaderIcon, LockIcon, MailIcon, MessageCircleIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -16,10 +16,13 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
   const { isLoggingIn } = useSelector((state) => state.auth);
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     // Dispatch login action
-    dispatch(login(formData));
+    const res = await dispatch(login(formData));
+     if (res.meta.requestStatus === "fulfilled") {
+      dispatch(connectSocket());
+     }
     // Reset form
     setFormData({
       email: '',

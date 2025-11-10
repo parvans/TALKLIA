@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { axiosInstance } from "../../lib/axios";
 
 
+// CONTACTS
 export const fetchAllContacts = createAsyncThunk('messages/contacts', async (_, thunkAPI) => {
   try {
     const res = await axiosInstance.get('/messages/contacts');
@@ -12,19 +13,31 @@ export const fetchAllContacts = createAsyncThunk('messages/contacts', async (_, 
   }
 });
 
-export const getChats = createAsyncThunk('messages/chats', async (_, thunkAPI) => {
+// CHATS
+export const fetchChats = createAsyncThunk('chat/chats', async (_, thunkAPI) => {
   try {
-    const res = await axiosInstance.get('/messages/chats');
+    const res = await axiosInstance.get('/chat');
     return res.data;
-    } catch (error) {
+    } catch (error) {  
     console.error('Error in getChats:', error);
     return thunkAPI.rejectWithValue(null);
   }
 });
 
-export const getMessagesByUserId = createAsyncThunk('messages/:id', async (id, thunkAPI) => {
+export const accessChat = createAsyncThunk('chat/:userId', async (userId, thunkAPI) => {
   try {
-    const res = await axiosInstance.get(`/messages/${id}`);
+    const res = await axiosInstance.post(`/chat/${userId}`);
+    return res.data;
+  } catch (error) {
+    console.error('Error in accessChat:', error);
+    return thunkAPI.rejectWithValue(null);
+  }
+});
+
+// MESSAGES
+export const getMessagesByUserId = createAsyncThunk('messages/:chatId', async (chatId, thunkAPI) => {
+  try {
+    const res = await axiosInstance.get(`/messages/${chatId}`);
     return res.data;
   } catch (error) {
     console.error('Error in getMessagesByUserId:', error);
@@ -32,9 +45,9 @@ export const getMessagesByUserId = createAsyncThunk('messages/:id', async (id, t
   }
 });
 
-export const sendMessage = createAsyncThunk('messages/send/:id', async (data, thunkAPI) => {
+export const sendMessage = createAsyncThunk('messages/send/:chatId', async (data, thunkAPI) => {
   try {
-    const res = await axiosInstance.post(`/messages/send/${data.id}`, data);
+    const res = await axiosInstance.post(`/messages/send/${data.chatId}`, data);
     return res.data;
   } catch (error) {
     console.error('Error in sendMessage:', error);
@@ -50,9 +63,10 @@ const chatSlice = createSlice({
         chats:[],
         messages:[],
         activeTab: 'chats', // 'chats' or 'contacts'
-        selectedUser: null,
+        selectedChat: null,
         isUsersLoading: false,
         isMessagesLoading: false,
+        isSending: false,
         isToneEnabled: JSON.parse(localStorage.getItem('isToneEnabled')) === true
     },
     reducers: {
@@ -63,12 +77,13 @@ const chatSlice = createSlice({
         setActiveTab: (state, action) => {
           state.activeTab = action.payload;
         },
-        setSelectedUser: (state, action) => {
-          state.selectedUser = action.payload;
+        setSelectedChat: (state, action) => {
+          state.selectedChat = action.payload;
+          state.messages = [];
         },
     },
     extraReducers: (builder) => {
-        // fetchAllContacts
+        // Contacts
         builder
           .addCase(fetchAllContacts.pending, (state) => {
             state.isUsersLoading = true;
@@ -81,20 +96,42 @@ const chatSlice = createSlice({
             state.isUsersLoading = false;
           });
 
-        // getChats
+        // Chats
         builder
-          .addCase(getChats.pending, (state) => {
+          .addCase(fetchChats.pending, (state) => {
             state.isUsersLoading = true;
           })
-          .addCase(getChats.fulfilled, (state, action) => {
+          .addCase(fetchChats.fulfilled, (state, action) => {
             state.isUsersLoading = false;
             state.chats = action.payload;
           })
-          .addCase(getChats.rejected, (state) => {
+          .addCase(fetchChats.rejected, (state) => {
             state.isUsersLoading = false;
           });
 
-        // getMessagesByUserId
+        // Access Chat
+        builder
+          .addCase(accessChat.pending, (state) => {
+            state.isUsersLoading = true;
+          })
+          .addCase(accessChat.fulfilled, (state, action) => {
+            state.isUsersLoading = false;
+            const existingChat = state.chats.find(chat => chat._id === action.payload._id);
+            if (!existingChat) {
+              // Add it if it's a new chat
+              state.chats.push(action.payload);
+              state.activeTab = 'chats';
+            }
+
+            // Also, set it as the currently selected chat
+            state.selectedChat = action.payload;
+            state.messages = [];
+          })
+          .addCase(accessChat.rejected, (state) => {
+            state.isUsersLoading = false;
+          });
+
+        // Messages
         builder
           .addCase(getMessagesByUserId.pending, (state) => {
             state.isMessagesLoading = true;
@@ -107,20 +144,20 @@ const chatSlice = createSlice({
             state.isMessagesLoading = false;
           });
 
-        // sendMessage
+        // Send Message
         builder
           .addCase(sendMessage.pending, (state) => {
-            state.isMessagesLoading = true;
+            state.isSending  = true;
           })
           .addCase(sendMessage.fulfilled, (state, action) => {
-            state.isMessagesLoading = false;
-            state.messages = state.messages.concat(action.payload);
+            state.isSending  = false;
+             state.messages.push(action.payload);
           })
           .addCase(sendMessage.rejected, (state) => {
-            state.isMessagesLoading = false;
+            state.isSending  = false;
           });
       },
 });
 
-export const { toggleTone, setActiveTab, setSelectedUser } = chatSlice.actions;
+export const { toggleTone, setActiveTab, setSelectedChat } = chatSlice.actions;
 export default chatSlice.reducer;

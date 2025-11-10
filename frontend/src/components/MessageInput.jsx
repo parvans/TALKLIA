@@ -10,7 +10,7 @@ export default function MessageInput() {
     const [imagePreview, setImagePreview] = useState(null);
     const fileInput = useRef(null);
     const dispatch = useDispatch();
-    const { isToneEnabled, selectedUser } = useSelector(state => state.chat);
+    const { isToneEnabled, selectedChat, isSending  } = useSelector(state => state.chat);
 
     const handleSendMessage = (e)=>{
         e.preventDefault();
@@ -19,7 +19,8 @@ export default function MessageInput() {
         dispatch(sendMessage({
             content:text.trim(), 
             image:imagePreview,
-            id:selectedUser._id
+            chatId:selectedChat._id,
+            messageType:imagePreview ? 'image' : 'text'
         }));
         setText('');
         setImagePreview(null);
@@ -60,7 +61,7 @@ export default function MessageInput() {
         )}
         <form onSubmit={handleSendMessage} className="flex items-center gap-4 relative">
             <input type="text" value={text} onChange={(e)=>setText(e.target.value)} placeholder="Type a message..." className="w-full bg-slate-800 py-2 px-4 rounded-md focus:outline-none" />
-            <button type="submit" className="text-slate-400 hover:text-slate-300 transition-colors">
+            <button type="submit" disabled={isSending} className="text-slate-400 hover:text-slate-300 transition-colors">
                 <Send className="w-6 h-6" />
             </button>
             <input type="file" accept='image/*' onChange={handleImageUpload} ref={fileInput} className="hidden" />
