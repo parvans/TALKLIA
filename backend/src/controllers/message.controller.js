@@ -3,6 +3,7 @@ import cloudinary from "../lib/cloudinary.js";
 import Message from "../models/Message.js";
 import User from "../models/User.js";
 import Chat from "../models/Chat.js";
+import { getReceiverSocketId, io } from "../lib/socket.js";
 
 export const getAllContacts = async(req, res) => {
     try {
@@ -75,6 +76,10 @@ export const sendMessage = async(req, res) => {
         });
         await newMessage.save();
 
+        const receiverSocketId = getReceiverSocketId(
+          chatExists.users.find((user) => !user.equals(senderId))
+        );
+
         await Chat.findByIdAndUpdate(chatId, { 
           latestMessage: newMessage._id,
           lastActivity: new Date(),
@@ -90,7 +95,11 @@ export const sendMessage = async(req, res) => {
             },
         });
 
-        res.status(201).json(newMessage);
+        if (receiverSocketId) {
+          io.to(receiverSocketId).emit("newMessage", fullMessage);
+        }
+
+        res.status(201).json(fullMessage);
     } catch (error) {
         console.log("Error in sendMessage:", error);
         res.status(500).json({ message: "Internal Server Error" });

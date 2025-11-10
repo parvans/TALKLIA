@@ -8,9 +8,26 @@ import ContactsList from '../components/ContactsList';
 import ProfileHeader from '../components/ProfileHeader.JSX';
 import WelcomeScreen from '../components/WelcomeScreen';
 import ChatContainer from '../components/ChatContainer';
+import { useEffect } from 'react';
 export default function Chat() {
   const dispatch = useDispatch();
   const { activeTab, selectedChat } = useSelector((state) => state.chat);
+  const { socket } = useSelector((state) => state.auth);
+
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("newMessage", (message) => {
+      if (selectedChat && message.chat._id === selectedChat._id) {
+        dispatch({ type: "chat/newMessageReceived", payload: message });
+      }
+    });
+
+    return () => socket.off("newMessage");
+  }, [socket, selectedChat, dispatch]);
+
+
   return (
     <div className="fixed inset-0 flex items-center justify-center">
       <div className="w-full max-w-6xl h-screen">

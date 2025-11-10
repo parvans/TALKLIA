@@ -81,6 +81,10 @@ const chatSlice = createSlice({
           state.selectedChat = action.payload;
           state.messages = [];
         },
+        newMessageReceived: (state, action) => {
+          state.messages.push(action.payload);
+        },
+
     },
     extraReducers: (builder) => {
         // Contacts
@@ -98,9 +102,9 @@ const chatSlice = createSlice({
 
         // Chats
         builder
-          .addCase(fetchChats.pending, (state) => {
-            state.isUsersLoading = true;
-          })
+          // .addCase(fetchChats.pending, (state) => {
+          //   // state.isUsersLoading = true;
+          // })
           .addCase(fetchChats.fulfilled, (state, action) => {
             state.isUsersLoading = false;
             state.chats = action.payload;
@@ -159,5 +163,5 @@ const chatSlice = createSlice({
       },
 });
 
-export const { toggleTone, setActiveTab, setSelectedChat } = chatSlice.actions;
+export const { toggleTone, setActiveTab, setSelectedChat, newMessageReceived } = chatSlice.actions;
 export default chatSlice.reducer;

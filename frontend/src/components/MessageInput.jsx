@@ -11,17 +11,24 @@ export default function MessageInput() {
     const fileInput = useRef(null);
     const dispatch = useDispatch();
     const { isToneEnabled, selectedChat, isSending  } = useSelector(state => state.chat);
+    const { socket } = useSelector((state) => state.auth);
 
-    const handleSendMessage = (e)=>{
+
+    const handleSendMessage = async(e)=>{
         e.preventDefault();
         if(!text.trim() && !imagePreview) return;
         if(isToneEnabled) playRandonKeyStrokeSound();
-        dispatch(sendMessage({
+
+        const messageData = {
             content:text.trim(), 
             image:imagePreview,
             chatId:selectedChat._id,
             messageType:imagePreview ? 'image' : 'text'
-        }));
+        }
+        const result = await dispatch(sendMessage(messageData));
+        if (socket && result?.payload) {
+            socket.emit("sendMessage", result.payload);
+        }
         setText('');
         setImagePreview(null);
         if(fileInput.current) fileInput.current.value = null;

@@ -7,11 +7,11 @@ import ChatItem from './ChatItem';
 
 export default function ChatsList() {
   const dispatch = useDispatch();
-  const { isUsersLoading, chats, activeTab } = useSelector((state) => state.chat);
+  const { isUsersLoading, chats, activeTab,messages } = useSelector((state) => state.chat);
 
   useEffect(()=>{
     dispatch(fetchChats());
-  },[dispatch]);
+  },[dispatch, messages]);
 
   if(isUsersLoading) return <UserLoadingSkeleton />
   if(chats.length === 0) return <NoFound tab={activeTab} />
