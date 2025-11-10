@@ -46,7 +46,29 @@ export default function ChatContainer() {
     };
   });
 
-  console.log(groupArrays);
+  // const topLabel = document.getElementById("date-label");
+  // const messageBox = document.getElementById("chatbox");
+
+  // const stickeyDate = () => {
+  //   const dateLabels = document.querySelectorAll(".divider");
+  //   let currentLabel = null;
+  //   dateLabels.forEach((label) => {
+  //     if (messageBox?.scrollTop >= label.offsetTop) {
+  //       currentLabel = label;
+  //     }
+  //   });
+  //   if (currentLabel) {
+  //     topLabel && (topLabel.style.opacity = 1);
+  //     topLabel.innerText = currentLabel.innerText;
+  //   } else {
+  //     topLabel && (topLabel.style.opacity = 0);
+  //   }
+
+  //   setTimeout(() => {
+  //     topLabel && (topLabel.style.opacity = 0);
+  //     topLabel && (topLabel.style.transition = "opacity 0.5s");
+  //   }, 2000);
+  // };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView();
@@ -89,7 +111,7 @@ export default function ChatContainer() {
                           ? "chat-bubble bg-blue-600 text-white" 
                           : "chat-bubble bg-slate-700 text-gray-100" }`}>
                           {msg.image && (
-                            <img src={msg.image} alt="shared image" className='rounded-lg h-50 object-cover' />
+                            <img src={msg.image} alt="shared image" className='rounded-sm h-22 w-22 object-cover' />
                             )}
                             {msg.content && <p className='mt-1'>{msg.content}</p>}
                           </div>

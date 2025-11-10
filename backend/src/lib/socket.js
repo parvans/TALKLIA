@@ -33,6 +33,21 @@ io.on("connection", (socket)=>{
     // emit used to send events all connected clients
     io.emit('onlineUsers', Object.keys(userSocketMap));
 
+
+    socket.on("sendMessage", (message) => {
+        const chat = message.chat;
+        if (!chat || !chat.users) return;
+
+        // Send to all users in chat except sender
+        chat.users.forEach((user) => {
+        if (user._id.toString() === socket.userId) return;
+        const receiverSocketId = userSocketMap[user._id.toString()];
+        if (receiverSocketId) {
+            socket.to(receiverSocketId).emit("messageReceived", message);
+        }
+        });
+    });
+
     // socket.on , we listen for events from clients
     socket.on("disconnect", ()=>{
         console.log("A User Disconnected :- ",socket.user.username);

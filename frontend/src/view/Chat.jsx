@@ -9,23 +9,30 @@ import ProfileHeader from '../components/ProfileHeader.JSX';
 import WelcomeScreen from '../components/WelcomeScreen';
 import ChatContainer from '../components/ChatContainer';
 import { useEffect } from 'react';
+import { newMessageReceived } from '../store/slices/chatSlice';
 export default function Chat() {
   const dispatch = useDispatch();
   const { activeTab, selectedChat } = useSelector((state) => state.chat);
   const { socket } = useSelector((state) => state.auth);
 
 
-  useEffect(() => {
-    if (!socket) return;
+ useEffect(() => {
+  if (!socket) return;
 
-    socket.on("newMessage", (message) => {
-      if (selectedChat && message.chat._id === selectedChat._id) {
-        dispatch({ type: "chat/newMessageReceived", payload: message });
-      }
-    });
+  const handleNewMessage = (message) => {
+    if (selectedChat && message.chat._id === selectedChat._id) {
+      dispatch(newMessageReceived(message));
+    }
+  };
 
-    return () => socket.off("newMessage");
-  }, [socket, selectedChat, dispatch]);
+  socket.on("newMessage", handleNewMessage);
+
+  // Cleanup properly when component unmounts or socket changes
+  return () => {
+    socket.off("newMessage", handleNewMessage);
+  };
+}, [socket, dispatch, selectedChat?._id]);
+
 
 
   return (
