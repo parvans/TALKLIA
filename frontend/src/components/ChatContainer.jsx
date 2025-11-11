@@ -12,15 +12,11 @@ export default function ChatContainer() {
   const { selectedChat, messages, isMessagesLoading } = useSelector((state) => state.chat);
   const {authUser} = useSelector((state) => state.auth);
   const messagesEndRef = useRef(null);
-
-  console.log(selectedChat);
-  
+  const chatContainerRef = useRef(null);  
 
   useEffect(() => {
     if (selectedChat?._id) dispatch(getMessagesByUserId(selectedChat._id));
   }, [selectedChat, dispatch]);
-
- 
 
   const groupedDays = messages.reduce((groups, message) => {
     const isSameorAfter = moment(message.createdAt).calendar({
@@ -45,6 +41,7 @@ export default function ChatContainer() {
       messages: groupedDays[date],
     };
   });
+  
 
   // const topLabel = document.getElementById("date-label");
   // const messageBox = document.getElementById("chatbox");
@@ -70,59 +67,69 @@ export default function ChatContainer() {
   //   }, 2000);
   // };
 
+  // Sort groupArrays by date (most recent first)
+  groupArrays.sort((a, b) => {
+    const dateA = moment(a.messages[0].createdAt);
+    const dateB = moment(b.messages[0].createdAt);
+    return dateA - dateB; // Oldest first
+  });
+
+  console.log(groupArrays);
+
+  
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView();
-  }, [dispatch, messages]);
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
 
   return (
     <>
     <ChatHeader user={selectedChat} />
-    <div className="flex-1 px-6 overflow-y-auto py-8 scroll-smooth">
+    <div 
+      ref={chatContainerRef} 
+      className="flex-1 px-6 overflow-y-auto py-8 scroll-smooth"
+      style={{ maxHeight: "calc(100vh - 200px)" }}
+      >
       {
         messages.length > 0 && !isMessagesLoading ? (
-          <>
-          {
-            groupArrays.map((group, index)=>(
-              <div key={index}>
-                {/* date */}
-                <div className="text-center text-slate-400 text-xs my-2 uppercase font-semibold">
-                  {group.date}
-                </div>
-                {/* messages */}
+          <div className="max-w-3xl mx-auto">
+            {
+              groupArrays.map((group, index1)=>(
+                <div key={`group-${index1}-${group.date}`}>
+                  {/* date */}
+                  <div className="text-center text-slate-400 text-xs my-2 uppercase font-semibold sticky top-0 py-2 z-10">
+                    {group.date}
+                  </div>
+                  {/* messages */}
 
-                <div 
-                // ref={messagesEndRef} 
-                className="max-w-3xl mx-auto space-y-6"
-                style={{ maxHeight: "calc(100vh - 200px)" }}
-                >
-                  {group?.messages.map((msg)=>{
-                    const senderId = String(msg.sender && (msg.sender._id ?? msg.sender));
-                    const isMine = senderId === String(authUser._id);
-                    return(
-                      <div key={msg._id} className={`chat ${isMine? "chat-end" : "chat-start" }`}>
-                        {console.log(msg.sender._id === authUser._id)}
-                        
-                        <div className="chat-header">
-                          {/* {msg.senderId === authUser._id ? authUser.username : selectedChat.username} */}
-                          <time className="text-xs opacity-50">{moment(msg.createdAt).fromNow()}</time>
+                  <div className="space-y-4">
+                    {group?.messages.map((msg, index2)=>{
+                      const senderId = String(msg.sender && (msg.sender._id ?? msg.sender));
+                      const isMine = senderId === String(authUser._id);
+                      
+                      return(
+                        <div key={`msg-${msg._id}-${index2}`} className={`chat ${isMine? "chat-end" : "chat-start" }`}>
+                          
+                          {/* <div className="chat-header">
+                            <time className="text-xs opacity-50">{moment(msg.createdAt).fromNow()}</time>
+                          </div> */}
+                          <div className={`chat-bubble relative 
+                            ${isMine
+                            ? "chat-bubble bg-blue-600 text-white" 
+                            : "chat-bubble bg-slate-700 text-gray-100" }`}>
+                            {msg.image && (
+                              <img src={msg.image} alt="shared image" className='rounded-sm h-22 w-22 object-cover' />
+                              )}
+                              {msg.content && <p className='mt-1'>{msg.content}</p>}
+                            </div>
                         </div>
-                        <div className={`chat-bubble relative 
-                          ${isMine
-                          ? "chat-bubble bg-blue-600 text-white" 
-                          : "chat-bubble bg-slate-700 text-gray-100" }`}>
-                          {msg.image && (
-                            <img src={msg.image} alt="shared image" className='rounded-sm h-22 w-22 object-cover' />
-                            )}
-                            {msg.content && <p className='mt-1'>{msg.content}</p>}
-                          </div>
-                      </div>
                     )})}
-                  <div ref={messagesEndRef} />
+                  </div>
                 </div>
-              </div>
-            ))
-          }
-          </>
+              ))}
+            <div ref={messagesEndRef} />
+          </div>
         )
         : isMessagesLoading ? (
           <MessagesLoadingSkeleton />
