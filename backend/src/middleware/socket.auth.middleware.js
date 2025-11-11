@@ -8,9 +8,10 @@ export const socketAuthMiddleare = async(socket, next) => {
         // token
         const token = socket.handshake.headers.cookie
         ?.split(';')
+        .map(c => c.trim())
         .find((row)=>row.startsWith('jwt='))
         ?.split('=')[1];
-
+        
         if(!token){
             console.log("Socket connection rejcted due to no token");
             return next(new Error('Unauthorized - No token provided'));
@@ -18,7 +19,6 @@ export const socketAuthMiddleare = async(socket, next) => {
 
         // verify
         const decoded = jwt.verify(token, ENV.JWT_SECRET);
-        console.log(decoded);
         
         if(!decoded){
             console.log("Socket connection rejcted due to invalid token");
