@@ -52,6 +52,17 @@ export const logout = createAsyncThunk('auth/logout', async (_, thunkAPI) => {
   }
 });
 
+export const googleLogin = createAsyncThunk('auth/google', async (formData, thunkAPI) => {
+  try {
+    const res = await axiosInstance.post('/auth/google', formData);
+    toast.success('Logged in with Google!');
+    return res.data;
+  } catch (error) {
+    toast.error(error.response?.data?.message || 'Google login failed. Please try again.');
+    return thunkAPI.rejectWithValue(error.response?.data);
+  }
+});
+
 // update Profile
 
 export const updateProfile = createAsyncThunk('auth/update-profile', async (formData, thunkAPI) => {
@@ -142,6 +153,21 @@ const authSlice = createSlice({
         state.isLoggingIn = false;
       })
       .addCase(login.rejected, (state) => {
+        state.authUser = null;
+        state.isLoggingIn = false;
+      });
+
+    // googleLogin
+    builder
+      .addCase(googleLogin.pending, (state) => {
+        state.authUser = null;
+        state.isLoggingIn = true;
+      })
+      .addCase(googleLogin.fulfilled, (state, action) => {
+        state.authUser = action.payload;
+        state.isLoggingIn = false;
+      })
+      .addCase(googleLogin.rejected, (state) => {
         state.authUser = null;
         state.isLoggingIn = false;
       });

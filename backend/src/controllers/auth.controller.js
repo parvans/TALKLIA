@@ -1,7 +1,55 @@
 import cloudinary from "../lib/cloudinary.js";
+import { ENV } from "../lib/env.js";
 import { generateToken } from "../lib/utils.js";
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
+import { OAuth2Client } from "google-auth-library";
+
+const client = new OAuth2Client(ENV.GOOGLE_CLIENT_ID);
+
+
+export const googleLogin = async (req, res) => {
+  try {
+    const { credential } = req.body; // from Google Identity SDK
+
+    if (!credential) return res.status(400).json({ message: "No Google token provided" });
+
+    // verify token with Google
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: ENV.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, picture, sub: googleId } = payload;
+
+    // find or create user
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = await User.create({
+        username: name,
+        email,
+        password: googleId, // placeholder (not used for Google users)
+        profilePicture: picture,
+      });
+    }
+
+    // issue your JWT and cookie
+    generateToken(user._id, res);
+
+    return res.status(200).json({
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      profilePicture: user.profilePicture,
+    });
+  } catch (error) {
+    console.error("Google login error:", error);
+    res.status(500).json({ message: "Google login failed" });
+  }
+};
+
 export const signup = async(req, res) => {
     const { username, email, password } = req.body;
 

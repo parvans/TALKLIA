@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
-import { connectSocket, login } from '../store/slices/authSlice';
+import { connectSocket, googleLogin, login } from '../store/slices/authSlice';
 import BorderAnimatedContainer from '../components/BorderAnimatedContainer';
 import { LoaderIcon, LockIcon, MailIcon, MessageCircleIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -29,6 +29,41 @@ export default function Login() {
       password: '',
     });
   };
+
+  useEffect(() => {
+    /* global google */
+    if (window.google) {
+      google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID, // must match backend
+        callback: handleGoogleResponse,
+      });
+
+      google.accounts.id.renderButton(
+        document.getElementById("googleSignInDiv"),
+        { theme: "outline", size: "large", width: "100%" }
+      );
+    }
+  }, []);
+
+  console.log(import.meta.env.VITE_GOOGLE_CLIENT_ID);
+
+  const handleGoogleResponse = async (response) => {
+    try {
+      // const res = await axiosInstance.post('/auth/google', {
+      //   credential: response.credential,
+      // });
+
+      const res = await dispatch(googleLogin({ credential: response.credential }));
+      toast.success("Logged in with Google!");
+      if (res.meta.requestStatus === "fulfilled") {
+      dispatch(connectSocket());
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Google login failed");
+    }
+  };
+
   return (
     <div className="w-full flex items-center justify-center p-4 bg-slate-900">
     <div className="relative w-full max-w-6xl md:h-[800px] h-[650px]">
@@ -94,6 +129,11 @@ export default function Login() {
                     )}
                   </button>
                 </form>
+
+                {/* GOOGLE LOGIN BUTTON */}
+                <div className="mt-6">
+                  <div id="googleSignInDiv" className="flex justify-center"></div>
+                </div>
 
                 <div className="mt-6 text-center">
                   <Link to="/signup" className="auth-link">

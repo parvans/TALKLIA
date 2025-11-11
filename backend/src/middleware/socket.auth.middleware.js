@@ -18,6 +18,8 @@ export const socketAuthMiddleare = async(socket, next) => {
 
         // verify
         const decoded = jwt.verify(token, ENV.JWT_SECRET);
+        console.log(decoded);
+        
         if(!decoded){
             console.log("Socket connection rejcted due to invalid token");
             return next(new Error('Unauthorized - Invalid token provided'));
