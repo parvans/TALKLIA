@@ -67,7 +67,7 @@ export default function MessageInput() {
             </div>
         )}
         <form onSubmit={handleSendMessage} className="flex items-center gap-4 relative">
-            <input type="text" value={text} onChange={(e)=>setText(e.target.value)} placeholder="Type a message..." className="w-full bg-slate-800 py-2 px-4 rounded-md focus:outline-none" />
+            <input type="text" value={text} onChange={(e)=>setText(e.target.value)} placeholder="Type a message..." className="w-full bg-slate-100 py-2 px-4 rounded-md focus:outline-none" />
             <button type="submit" disabled={isSending} className="text-slate-400 hover:text-slate-300 transition-colors">
                 <Send className="w-6 h-6" />
             </button>

@@ -4,7 +4,7 @@ import { getMessagesByUserId } from '../store/slices/chatSlice';
 import ChatHeader from './ChatHeader';
 import { ArrowDown01, ArrowDown01Icon, ArrowDownCircle, ArrowDownIcon, MessageSquareDiff } from 'lucide-react';
 import moment from 'moment';
-import MessageInput from './MessageInput';
+// import MessageInput from './MessageInput';
 import MessagesLoadingSkeleton from './MessagesLoadingSkeleton';
 import { useState } from 'react';
 
@@ -111,7 +111,7 @@ export default function ChatContainer() {
     <div 
       ref={chatContainerRef} 
       className="flex-1 px-6 overflow-y-auto py-8 scroll-smooth"
-      style={{ maxHeight: "calc(100vh - 200px)" }}
+      // style={{ maxHeight: "calc(100vh - 200px)" }}
       onScroll={handleScroll}
       >
       {
@@ -171,7 +171,7 @@ export default function ChatContainer() {
 
         {showScrollButton &&(
           <button 
-        className='fixed bottom-[8rem] right-8 bg-blue-600 hover:bg-blue-700 
+        className='fixed bottom-[6rem] right-8 bg-blue-600 hover:bg-blue-700 
         text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 z-50'
         onClick={scrollToBottom}
         >
@@ -179,7 +179,7 @@ export default function ChatContainer() {
         </button>)}
     </div>
 
-    <MessageInput />
+    {/* <MessageInput /> */}
     </>
   )
 }

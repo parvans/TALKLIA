@@ -23,7 +23,7 @@ export default function ChatHeader({user}) {
         }
     },[selectedChat]);
   return (
-   <div className="flex justify-between items-center bg-slate-800 p-4 border-b border-slate-700/60">
+   <div className="flex justify-between items-center bg-slate-800 p-1 border-b border-slate-700/60">
     
     <div className="flex items-center gap-3">
         <button 

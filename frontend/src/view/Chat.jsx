@@ -10,6 +10,8 @@ import WelcomeScreen from '../components/WelcomeScreen';
 import ChatContainer from '../components/ChatContainer';
 import { useEffect } from 'react';
 import { newMessageReceived } from '../store/slices/chatSlice';
+import MessageInput from '../components/MessageInput';
+
 export default function Chat() {
   const dispatch = useDispatch();
   const { activeTab, selectedChat } = useSelector((state) => state.chat);
@@ -54,12 +56,18 @@ export default function Chat() {
           </div>
 
           {/* RIGHT */}
-          <div 
+          <div
+          id='PP'
            className={`w-full md:flex-1 flex flex-col bg-slate-800/60 backdrop-blur-sm
               ${selectedChat ? 'flex' : 'hidden'} md:flex
             `}
           >
-            {selectedChat ? <ChatContainer /> : <WelcomeScreen />}
+            {selectedChat ? (
+              <div className="flex flex-col h-full">
+                <ChatContainer />
+                 <MessageInput />
+              </div>
+            ) : (<WelcomeScreen />)}
           </div>
           
         </BorderAnimatedContainer>
