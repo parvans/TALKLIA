@@ -37,22 +37,35 @@ export default function ChatItem({ chat, type }) {
       onClick={handleClick}
       className='flex items-center space-x-4 p-3 rounded-lg hover:bg-slate-700 cursor-pointer border-b border-slate-400/50'
     >
-      {chatImg ? (
-        <div className={`avatar ${onlineUsers?.includes(chatUser._id) ? 'online' : 'offline'}`}>
-          <div className="size-12 rounded-full">
-            <img src={chatImg} alt="profile" />
+        {chatImg ? (
+          <div className={`avatar ${onlineUsers?.includes(chatUser._id) ? 'online' : 'offline'}`}>
+            <div className="size-12 rounded-full">
+              <img src={chatImg} alt="profile" />
+            </div>
           </div>
-        </div>
-      ) : (
-        <UserLetterAvatar user={chatUser} />
-      )}
+        ) : (
+          <UserLetterAvatar user={chatUser} />
+        )}
 
       <div className="flex-1">
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center justify-between">
           <h3 className="font-semibold text-slate-200 truncate max-w-[105px]">{chatUser?.username}</h3>
-          { type === "chat" &&
-            <span className="text-xs text-slate-400">{moment(chat?.latestMessage?.createdAt).fromNow()}</span>
-          }
+          {/* In the right-side section where you have timestamp: */}
+          <div className="flex flex-col items-end space-y-1">
+            {type === "chat" && (
+              <span className="text-xs text-slate-400 whitespace-nowrap">
+                {moment(chat?.latestMessage?.createdAt).fromNow()}
+              </span>
+            )}
+            
+            {/* Unread indicator on the right */}
+            {/* {type === "chat" && unreadCount > 0 && ( */}
+              <span className="bg-green-600 text-slate-200 text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center px-1">
+                {/* {unreadCount > 9 ? '9+' : unreadCount} */}
+                1
+              </span>
+            {/* )} */}
+          </div>
         </div>
        { type === "chat" && (
         <p className="text-sm text-slate-400 truncate max-w-[140px]">

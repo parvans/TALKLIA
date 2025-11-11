@@ -2,15 +2,17 @@ import React, { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { getMessagesByUserId } from '../store/slices/chatSlice';
 import ChatHeader from './ChatHeader';
-import { MessageSquareDiff } from 'lucide-react';
+import { ArrowDown01, ArrowDown01Icon, ArrowDownCircle, ArrowDownIcon, MessageSquareDiff } from 'lucide-react';
 import moment from 'moment';
 import MessageInput from './MessageInput';
 import MessagesLoadingSkeleton from './MessagesLoadingSkeleton';
+import { useState } from 'react';
 
 export default function ChatContainer() {
   const dispatch = useDispatch();
   const { selectedChat, messages, isMessagesLoading } = useSelector((state) => state.chat);
   const {authUser} = useSelector((state) => state.auth);
+  const [showScrollButton, setShowScrollButton] = useState(false);
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);  
 
@@ -68,20 +70,40 @@ export default function ChatContainer() {
   // };
 
   // Sort groupArrays by date (most recent first)
-  groupArrays.sort((a, b) => {
-    const dateA = moment(a.messages[0].createdAt);
-    const dateB = moment(b.messages[0].createdAt);
-    return dateA - dateB; // Oldest first
-  });
+  // groupArrays.sort((a, b) => {
+  //   const dateA = moment(a.messages[0].createdAt);
+  //   const dateB = moment(b.messages[0].createdAt);
+  //   return dateA - dateB; // Oldest first
+  // });
 
-  console.log(groupArrays);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setShowScrollButton(false);
+  };
+  const handleScroll = () => {
+    if (chatContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+      const isAtBottom = scrollHeight - scrollTop - clientHeight < 100; // 100px threshold
+      setShowScrollButton(!isAtBottom);
+    }
+  };
 
-  
+  useEffect(() => {
+    if (messages.length > 0) {
+      const timer = setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [messages.length]);
+
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
+
+  
 
   return (
     <>
@@ -90,6 +112,7 @@ export default function ChatContainer() {
       ref={chatContainerRef} 
       className="flex-1 px-6 overflow-y-auto py-8 scroll-smooth"
       style={{ maxHeight: "calc(100vh - 200px)" }}
+      onScroll={handleScroll}
       >
       {
         messages.length > 0 && !isMessagesLoading ? (
@@ -111,9 +134,7 @@ export default function ChatContainer() {
                       return(
                         <div key={`msg-${msg._id}-${index2}`} className={`chat ${isMine? "chat-end" : "chat-start" }`}>
                           
-                          {/* <div className="chat-header">
-                            <time className="text-xs opacity-50">{moment(msg.createdAt).fromNow()}</time>
-                          </div> */}
+                          
                           <div className={`chat-bubble relative 
                             ${isMine
                             ? "chat-bubble bg-blue-600 text-white" 
@@ -121,8 +142,12 @@ export default function ChatContainer() {
                             {msg.image && (
                               <img src={msg.image} alt="shared image" className='rounded-sm h-22 w-22 object-cover' />
                               )}
-                              {msg.content && <p className='mt-1'>{msg.content}</p>}
+                              {msg.content && <p className='mt-1'>{msg.content}</p>
+                              }
                             </div>
+                            <div className="chat-footer">
+                            <time className="text-xs opacity-50">{moment(msg.createdAt).fromNow()}</time>
+                          </div>
                         </div>
                     )})}
                   </div>
@@ -141,6 +166,17 @@ export default function ChatContainer() {
             {/* <p className="text-slate-400">Start your conversation with {selectedChat.username}</p> */}
           </div>
         )}
+
+        {/* scroll button */}
+
+        {showScrollButton &&(
+          <button 
+        className='fixed bottom-[8rem] right-8 bg-blue-600 hover:bg-blue-700 
+        text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 z-50'
+        onClick={scrollToBottom}
+        >
+          <ArrowDownIcon size={20} />
+        </button>)}
     </div>
 
     <MessageInput />
