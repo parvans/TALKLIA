@@ -63,7 +63,27 @@ export default function MessageInput() {
             </div>
         )}
         <form onSubmit={handleSendMessage} className="flex items-center gap-4 relative">
-            <input type="text" value={text} onChange={(e)=>setText(e.target.value)} placeholder="Type a message..." className="w-full bg-slate-100 py-2 px-4 rounded-md focus:outline-none text-black" />
+            <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="Type a message..."
+                rows={1}
+                className="w-full bg-slate-100 py-2 px-4 rounded-md focus:outline-none text-black resize-none overflow-y-auto"
+                style={{
+                    maxHeight: "7.5rem",
+                }}
+                onInput={(e) => {
+                    e.target.style.height = "auto";
+                    e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`; 
+                }}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage(e);
+                    }
+                }}
+            />
+
             <button type="submit" disabled={isSending} className="text-slate-400 hover:text-slate-300 transition-colors">
                 <Send className="w-6 h-6" />
             </button>

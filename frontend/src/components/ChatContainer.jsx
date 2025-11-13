@@ -7,6 +7,7 @@ import moment from 'moment';
 // import MessageInput from './MessageInput';
 import MessagesLoadingSkeleton from './MessagesLoadingSkeleton';
 import { useState } from 'react';
+import MessageText from './MessageText';
 
 export default function ChatContainer() {
   const dispatch = useDispatch();
@@ -135,15 +136,16 @@ export default function ChatContainer() {
                         <div key={`msg-${msg._id}-${index2}`} className={`chat ${isMine? "chat-end" : "chat-start" }`}>
                           
                           
-                          <div className={`chat-bubble relative 
+                          <div className={`chat-bubble relative break-words whitespace-pre-wrap
                             ${isMine
                             ? "chat-bubble bg-blue-600 text-white" 
-                            : "chat-bubble bg-slate-700 text-gray-100" }`}>
+                            : "chat-bubble bg-slate-700 text-gray-100" }`}
+                            style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
+                            >
                             {msg.image && (
                               <img src={msg.image} alt="shared image" className='rounded-sm h-22 w-22 object-cover' />
                               )}
-                              {msg.content && <p className='mt-1'>{msg.content}</p>
-                              }
+                              {msg.content && <MessageText content={msg.content} />}
                             </div>
                             <div className="chat-footer">
                             <time className="text-xs opacity-50">{moment(msg.createdAt).fromNow()}</time>
