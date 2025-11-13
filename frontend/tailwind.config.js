@@ -13,6 +13,13 @@ export default {
           to: { "--border-angle": "360deg" },
         },
       },
+      colors: {
+        link: {
+          DEFAULT: "rgb(0 245 255)",
+          hover: "rgb(0 245 255 / 80%)",
+        },
+      },
+      
     },
   },
   plugins: [daisyui],

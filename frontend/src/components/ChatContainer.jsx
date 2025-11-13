@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { getMessagesByUserId } from '../store/slices/chatSlice';
 import ChatHeader from './ChatHeader';
-import { ArrowDown01, ArrowDown01Icon, ArrowDownCircle, ArrowDownIcon, MessageSquareDiff } from 'lucide-react';
+import { ArrowDown01, ArrowDown01Icon, ArrowDownCircle, ArrowDownIcon, MessageSquareDiff, MoreVertical } from 'lucide-react';
 import moment from 'moment';
 // import MessageInput from './MessageInput';
 import MessagesLoadingSkeleton from './MessagesLoadingSkeleton';
@@ -45,38 +45,6 @@ export default function ChatContainer() {
     };
   });
   
-
-  // const topLabel = document.getElementById("date-label");
-  // const messageBox = document.getElementById("chatbox");
-
-  // const stickeyDate = () => {
-  //   const dateLabels = document.querySelectorAll(".divider");
-  //   let currentLabel = null;
-  //   dateLabels.forEach((label) => {
-  //     if (messageBox?.scrollTop >= label.offsetTop) {
-  //       currentLabel = label;
-  //     }
-  //   });
-  //   if (currentLabel) {
-  //     topLabel && (topLabel.style.opacity = 1);
-  //     topLabel.innerText = currentLabel.innerText;
-  //   } else {
-  //     topLabel && (topLabel.style.opacity = 0);
-  //   }
-
-  //   setTimeout(() => {
-  //     topLabel && (topLabel.style.opacity = 0);
-  //     topLabel && (topLabel.style.transition = "opacity 0.5s");
-  //   }, 2000);
-  // };
-
-  // Sort groupArrays by date (most recent first)
-  // groupArrays.sort((a, b) => {
-  //   const dateA = moment(a.messages[0].createdAt);
-  //   const dateB = moment(b.messages[0].createdAt);
-  //   return dateA - dateB; // Oldest first
-  // });
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     setShowScrollButton(false);
@@ -122,7 +90,8 @@ export default function ChatContainer() {
               groupArrays.map((group, index1)=>(
                 <div key={`group-${index1}-${group.date}`}>
                   {/* date */}
-                  <div className="text-center text-slate-400 text-xs my-2 uppercase font-semibold sticky top-0 py-2 z-10">
+                  <div className="text-center text-slate-400 text-xs 
+                  my-2 uppercase font-semibold sticky top-0 py-2 z-10 rounded-sm bg-slate-800/50 backdrop-blur-sm">
                     {group.date}
                   </div>
                   {/* messages */}
@@ -142,13 +111,29 @@ export default function ChatContainer() {
                             : "chat-bubble bg-slate-700 text-gray-100" }`}
                             style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
                             >
+                              {/* dropdown */}
+                             {/* {isMine && ( <div className={`dropdown absolute top-1 ${isMine ? "-left-6" : "-right-6"}`}>
+                                <div tabIndex={0} className="p-1 rounded-full hover:bg-slate-600/50">
+                                  <MoreVertical size={16} />
+                                </div>
+                                <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
+                                  <li><a>Item 1</a></li>
+                                  <li><a>Item 2</a></li>
+                                </ul>
+                                </div>
+                            )} */}
                             {msg.image && (
                               <img src={msg.image} alt="shared image" className='rounded-sm h-22 w-22 object-cover' />
                               )}
                               {msg.content && <MessageText content={msg.content} />}
-                            </div>
-                            <div className="chat-footer">
-                            <time className="text-xs opacity-50">{moment(msg.createdAt).fromNow()}</time>
+                          </div>
+                          {/* <div className={`absolute top-1 ${isMine ? "-left-6" : "-right-6"} opacity-0 group-hover:opacity-100 transition-opacity`}>
+                            <button className="p-1 rounded-full hover:bg-slate-600/50">
+                              <MoreVertical size={16} />
+                            </button>
+                          </div> */}
+                          <div className="chat-footer">
+                          <time className="text-xs opacity-50">{moment(msg.createdAt).fromNow()}</time>
                           </div>
                         </div>
                     )})}
