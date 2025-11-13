@@ -29,9 +29,20 @@ export const socketMiddleware = (storeAPI) => (next) => (action) => {
       });
 
       socket.on("newMessage", (message) => {
-        const { selectedChat } = getState().chat;
+        const { selectedChat, isToneEnabled } = getState().chat;
         if (selectedChat && message.chat._id === selectedChat._id) {
           dispatch(newMessageReceived(message));
+        }else{
+          // + unread count
+          dispatch({ type: 'chat/incrementUnread', payload: message.chat._id });
+          
+          // notification sound
+          if(isToneEnabled){
+            const notificationSound = new Audio('/sounds/notification.mp3');
+            notificationSound.currentTime = 0;
+            notificationSound.play().catch((error)=>console.log("Audio play failed",error));
+
+          }
         }
       });
       break;

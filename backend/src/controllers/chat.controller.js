@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Chat from "../models/Chat.js";
 import User from "../models/User.js";
+import Message from "../models/Message.js";
 
 export const accessChat = async (req, res) => {
   try {
@@ -57,7 +58,20 @@ export const fetchChats = async (req, res) => {
       })
       .sort({ updatedAt: -1 });
 
-    res.status(200).json(chats);
+    // For each chat, count unread messages for the current user
+    const chatsWithUnread = await Promise.all(
+      chats.map(async (chat) => {
+        const unreadCount = await Message.countDocuments({
+          chat: chat._id,
+          "readBy.user": { $ne: userId },
+          sender: { $ne: userId },
+        });
+
+        return { ...chat.toObject(), unreadCount };
+      })
+    );
+
+    res.status(200).json(chatsWithUnread);
   } catch (error) {
     console.error("Error in fetchChats:", error);
     res.status(500).json({ message: "Internal Server Error" });

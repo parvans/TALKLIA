@@ -55,6 +55,16 @@ export const sendMessage = createAsyncThunk('messages/send/:chatId', async (data
   }
 })
 
+export const markMessagesAsRead = createAsyncThunk('messages/mark-read/:chatId', async (chatId, thunkAPI) => {
+  try {
+    const res = await axiosInstance.put(`/messages/mark-read/${chatId}`);
+    return res.data;
+  } catch (error) {
+    console.error('Error in markMessagesAsRead:', error);
+    return thunkAPI.rejectWithValue(null);
+  }
+})
+
 
 const chatSlice = createSlice({
     name: 'chat',
@@ -67,7 +77,8 @@ const chatSlice = createSlice({
         isUsersLoading: false,
         isMessagesLoading: false,
         isSending: false,
-        isToneEnabled: JSON.parse(localStorage.getItem('isToneEnabled')) === true
+        isToneEnabled: JSON.parse(localStorage.getItem('isToneEnabled')) === true,
+        unreadCount: 0
     },
     reducers: {
         toggleTone: (state) => {
@@ -79,11 +90,26 @@ const chatSlice = createSlice({
         },
         setSelectedChat: (state, action) => {
           state.selectedChat = action.payload;
+          // Don't clear messages unless chat actually changes
+          if (!state.selectedChat || state.selectedChat._id !== action.payload._id) {
           state.messages = [];
+          }
         },
         newMessageReceived: (state, action) => {
           state.messages.push(action.payload);
         },
+      incrementUnread: (state, action) => {
+        const chatId = action.payload;
+        const chat = state.chats.find(c => c._id === chatId);
+        if (chat) chat.unreadCount = (chat.unreadCount || 0) + 1;
+        state.unreadCount = (state.unreadCount || 0) + 1;
+      },
+      resetUnread: (state, action) => {
+        const chatId = action.payload;
+        const chat = state.chats.find(c => c._id === chatId);
+        if (chat) chat.unreadCount = 0;
+        state.unreadCount = 0;
+      },
 
     },
     extraReducers: (builder) => {
@@ -107,7 +133,17 @@ const chatSlice = createSlice({
           // })
           .addCase(fetchChats.fulfilled, (state, action) => {
             state.isUsersLoading = false;
-            state.chats = action.payload;
+            const incomingChats = action.payload;
+
+            // Keep previous unread counts
+            state.chats = incomingChats.map((newChat) => {
+              const existing = state.chats.find((c) => c._id === newChat._id);
+              return {
+                ...newChat,
+                unreadCount: existing ? existing.unreadCount : newChat.unreadCount || 0,
+              };
+            });
+
           })
           .addCase(fetchChats.rejected, (state) => {
             state.isUsersLoading = false;
@@ -163,5 +199,11 @@ const chatSlice = createSlice({
       },
 });
 
-export const { toggleTone, setActiveTab, setSelectedChat, newMessageReceived } = chatSlice.actions;
+export const { 
+  toggleTone, 
+  setActiveTab, 
+  setSelectedChat, 
+  newMessageReceived,
+  resetUnread 
+} = chatSlice.actions;
 export default chatSlice.reducer;

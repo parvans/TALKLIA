@@ -39,7 +39,9 @@ const messageSchema = new mongoose.Schema({
       enum: ["pending", "sent", "delivered", "seen"],
       default: "pending",
     },
-    image: { type: String }
+    image: { type: String },
+    isEdited: { type: Boolean, default: false },
+    isDeleted: { type: Boolean, default: false },
 },
 { timestamps: true }
 );

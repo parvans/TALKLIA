@@ -1,7 +1,7 @@
 import React from 'react'
 import UserLetterAvatar from './UserLetterAvatar'
 import { useDispatch, useSelector } from 'react-redux';
-import { setSelectedChat, accessChat } from '../store/slices/chatSlice';
+import { setSelectedChat, accessChat} from '../store/slices/chatSlice';
 import moment from 'moment';
 
 export default function ChatItem({ chat, type }) {
@@ -31,6 +31,7 @@ export default function ChatItem({ chat, type }) {
       dispatch(setSelectedChat(chat));
     }
   };
+  
 
   return (
     <div
@@ -59,18 +60,17 @@ export default function ChatItem({ chat, type }) {
             )}
             
             {/* Unread indicator on the right */}
-            {/* {type === "chat" && unreadCount > 0 && ( */}
+            {type === "chat" && chat.unreadCount > 0 && (
               <span className="bg-green-600 text-slate-200 text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center px-1">
-                {/* {unreadCount > 9 ? '9+' : unreadCount} */}
-                1
+                {chat.unreadCount > 100 ? "99+" : chat.unreadCount}
               </span>
-            {/* )} */}
+            )}
           </div>
         </div>
        { type === "chat" && (
         <p className="text-sm text-slate-400 truncate max-w-[140px]">
           {chat?.latestMessage?.sender._id === authUser._id ? "You: " : ""}
-          {chat?.latestMessage?.content || "Last message"}
+          {chat?.latestMessage?.content}
         </p>)}
       </div>
     </div>

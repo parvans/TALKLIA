@@ -9,14 +9,20 @@ import ProfileHeader from '../components/ProfileHeader.JSX';
 import WelcomeScreen from '../components/WelcomeScreen';
 import ChatContainer from '../components/ChatContainer';
 import { useEffect } from 'react';
-import { newMessageReceived } from '../store/slices/chatSlice';
 import MessageInput from '../components/MessageInput';
+import { markMessagesAsRead, resetUnread } from '../store/slices/chatSlice';
 
 export default function Chat() {
   const dispatch = useDispatch();
   const { activeTab, selectedChat } = useSelector((state) => state.chat);
-  const { socket } = useSelector((state) => state.auth);
 
+   useEffect(() => {
+    if (!selectedChat?._id) return;
+    // only work if the selected chat is not the current chat
+    dispatch(resetUnread(selectedChat._id));
+
+    dispatch(markMessagesAsRead(selectedChat._id));
+  }, [selectedChat?._id]);
 
 
 

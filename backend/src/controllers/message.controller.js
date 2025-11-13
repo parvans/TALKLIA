@@ -119,9 +119,79 @@ export const getChats = async (req, res) => {
       })
       .sort({ updatedAt: -1 });
 
-    res.status(200).json(chats);
+      // unread count
+      const chatsWithUnread = await Promise.all(
+        chats.map(async (chat) => {
+          const unreadCount = await Message.countDocuments({
+            chat: chat._id,
+            "readBy.user": { $ne: userId },
+            sender: { $ne: userId },
+          });
+          return { ...chat.toObject(), unreadCount };
+        })
+      );
+
+
+    res.status(200).json(chatsWithUnread);
   } catch (error) {
     console.error("Error in getChats:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+export const markMessagesAsRead = async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const userId = req.user._id;
+
+    const updated = await Message.updateMany(
+      { chat: chatId, "readBy.user": { $ne: userId } },
+      { $push: { readBy: { user: userId, readAt: new Date() } }, $set: { status: "seen" } }
+    );
+
+    res.status(200).json({ success: true, count: updated.modifiedCount });
+  } catch (error) {
+    console.error("Error in markMessagesAsRead:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const deleteAllMessages = async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const userId = req.user._id;
+
+    if (!mongoose.Types.ObjectId.isValid(chatId)) {
+      return res.status(400).json({ message: "Invalid chat ID" });
+    }
+
+    const chat = await Chat.findById(chatId);
+    if (!chat) {
+      return res.status(404).json({ message: "Chat not found" });
+    }
+
+    if (!chat.users.some((u) => u.equals(userId))) {
+      return res.status(403).json({ message: "You are not part of this chat" });
+    }
+
+    await Message.deleteMany({ chat: chatId });
+
+    chat.latestMessage = null;
+    await chat.save();
+
+    // Optionally notify the other user(s) via socket
+    // const receiverSocketId = getReceiverSocketId(
+    //   chat.users.find((user) => !user.equals(userId))
+    // );
+    // if (receiverSocketId) {
+    //   io.to(receiverSocketId).emit("chatCleared", chatId);
+    // }
+
+    res.status(200).json({ success: true, message: "All messages deleted", chatId });
+  } catch (error) {
+    console.error("Error in deleteAllMessages:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
