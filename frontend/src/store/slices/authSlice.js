@@ -1,9 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { axiosInstance } from '../../lib/axios';
 import toast from 'react-hot-toast';
-import { io } from 'socket.io-client';
 
-const BASEURL = import.meta.env.MODE === "development" ? "http://localhost:5000" : "/";
 // ✅ check if user is authenticated (token stored on backend or cookie)
 export const checkAuth = createAsyncThunk('auth/checkAuth', async (_, thunkAPI) => {
   try {
@@ -64,7 +62,6 @@ export const googleLogin = createAsyncThunk('auth/google', async (formData, thun
 });
 
 // update Profile
-
 export const updateProfile = createAsyncThunk('auth/update-profile', async (formData, thunkAPI) => {
   try {
     const res = await axiosInstance.put('/auth/update-profile', formData);
@@ -75,7 +72,9 @@ export const updateProfile = createAsyncThunk('auth/update-profile', async (form
     console.log("Error in update Profile:", error);
     return thunkAPI.rejectWithValue(error.response?.data);
   }
-})
+});
+
+
 
 const authSlice = createSlice({
   name: 'auth',
@@ -85,31 +84,11 @@ const authSlice = createSlice({
     isSigningUp: false,
     isLoggingIn: false,
     isUpdatingProfile: false,
-    socket: null,
     onlineUsers: [],
   },
   reducers: {
-    connectSocket: (state, action) => {
-      if(!state.authUser || state.socket?.connected) return;
-      const socket = io(BASEURL, {
-        withCredentials: true, // ensure cookies are sent with the connection
-
-      });
-
-      socket.connect();
-      state.socket = socket;
-
-      // online users
-      // socket.on('onlineUsers', (userIds) => {
-      //   state.onlineUsers = userIds;
-      // });
-    },
-    disconnectSocket: (state) => {
-      if(state.socket &&state.socket.connected){
-        state.socket?.disconnect();
-      }
-      state.socket = null;
-    },
+    connectSocket: () => {}, // middleware will handle this
+    disconnectSocket: () => {},
     setOnlineUsers: (state, action) => {
       state.onlineUsers = action.payload;
     },

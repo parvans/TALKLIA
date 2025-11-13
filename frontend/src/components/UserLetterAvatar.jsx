@@ -9,8 +9,6 @@ export default function UserLetterAvatar({ user }) {
         "#FF6B6B", "#FF8C42", "#FFD93D", "#6BCB77", "#4D96FF",
         "#845EC2", "#FF9671", "#FFC75F", "#008E9B", "#C34A36"
     ];
-
-    console.log(onlineUsers);
     
     const getAvatarColor = (name) => {
         if (!name) return "#6C757D";

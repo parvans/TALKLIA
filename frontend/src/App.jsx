@@ -4,13 +4,13 @@ import SignUp from './view/SignUp'
 import Login from './view/Login'
 import Chat from './view/Chat'
 import { useDispatch, useSelector } from 'react-redux'
-import { checkAuth, connectSocket, disconnectSocket, setOnlineUsers } from './store/slices/authSlice.js'
+import { checkAuth, connectSocket, disconnectSocket } from './store/slices/authSlice.js'
 import PageLoader from './components/PageLoader.jsx'
 import { Toaster } from 'react-hot-toast';
 
 export default function App() {
   const dispatch = useDispatch()
-  const { authUser, isCheckingAuth, socket } = useSelector((state) => state.auth)
+  const { authUser, isCheckingAuth } = useSelector((state) => state.auth)
   
   useEffect(()=>{
     dispatch(checkAuth());
@@ -23,20 +23,6 @@ export default function App() {
       dispatch(disconnectSocket());
     }
   }, [authUser, dispatch]);
-
-  useEffect(() => {
-    if (!socket) return;
-
-    const handleOnlineUsers = (userIds) => {
-      dispatch(setOnlineUsers(userIds));
-    };
-
-    socket.on("onlineUsers", handleOnlineUsers);
-
-    return () => {
-      socket.off("onlineUsers", handleOnlineUsers);
-    };
-  }, [socket, dispatch]);  
 
   if(isCheckingAuth) return <PageLoader/>
   return (

@@ -18,23 +18,6 @@ export default function Chat() {
   const { socket } = useSelector((state) => state.auth);
 
 
- useEffect(() => {
-  if (!socket) return;
-
-  const handleNewMessage = (message) => {
-    if (selectedChat && message.chat._id === selectedChat._id) {
-      dispatch(newMessageReceived(message));
-    }
-  };
-
-  socket.on("newMessage", handleNewMessage);
-
-  // Cleanup properly when component unmounts or socket changes
-  return () => {
-    socket.off("newMessage", handleNewMessage);
-  };
-}, [socket, dispatch, selectedChat?._id]);
-
 
 
   return (
