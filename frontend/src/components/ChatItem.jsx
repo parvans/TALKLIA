@@ -70,7 +70,9 @@ export default function ChatItem({ chat, type }) {
        { type === "chat" && (
         <p className="text-sm text-slate-400 truncate max-w-[140px]">
           {chat?.latestMessage?.sender._id === authUser._id ? "You: " : ""}
-          {chat?.latestMessage?.content}
+          {
+            chat?.latestMessage?.isDeleted ? "Message deleted" :
+          chat?.latestMessage?.content}
         </p>)}
       </div>
     </div>

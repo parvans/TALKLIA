@@ -16,8 +16,11 @@ router.get("/", protectRoute, fetchChats);
 
 // group chat
 router.post("/group", protectRoute, createGroupChat);
+
 router.put("/rename", protectRoute, renameGroup);
+
 router.put("/groupadd", protectRoute, addToGroup);
+
 router.put("/groupremove", protectRoute, removeFromGroup);
 
 // delete chat

@@ -15,7 +15,6 @@ import { markMessagesAsRead, resetUnread } from '../store/slices/chatSlice';
 export default function Chat() {
   const dispatch = useDispatch();
   const { activeTab, selectedChat } = useSelector((state) => state.chat);
-
    useEffect(() => {
     if (!selectedChat?._id) return;
     // only work if the selected chat is not the current chat

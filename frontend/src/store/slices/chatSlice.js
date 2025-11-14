@@ -63,7 +63,28 @@ export const markMessagesAsRead = createAsyncThunk('messages/mark-read/:chatId',
     console.error('Error in markMessagesAsRead:', error);
     return thunkAPI.rejectWithValue(null);
   }
-})
+});
+
+export const editMessage = createAsyncThunk('messages/edit/:messageId', async ({ messageId, content }, thunkAPI) => {
+  try {
+    const res = await axiosInstance.put(`/messages/edit/${messageId}`, { content });
+    return res.data;
+  } catch (error) {
+    console.error('Error in editMessage:', error);
+    return thunkAPI.rejectWithValue(null);
+  }
+});
+
+export const deleteMessage = createAsyncThunk('messages/delete/:messageId', async ({ messageId }, thunkAPI) => {
+  try {
+    const res = await axiosInstance.put(`/messages/delete/${messageId}`);
+    return res.data;
+  } catch (error) {
+    console.error('Error in editMessage:', error);
+    return thunkAPI.rejectWithValue(null);
+  }
+});
+
 
 
 const chatSlice = createSlice({
@@ -109,6 +130,20 @@ const chatSlice = createSlice({
         const chat = state.chats.find(c => c._id === chatId);
         if (chat) chat.unreadCount = 0;
         state.unreadCount = 0;
+      },
+      messageEdited: (state, action) => {
+        const updated = action.payload;
+        const index = state.messages.findIndex((m) => m._id === updated._id);
+        if (index !== -1) {
+          state.messages[index] = updated;
+        }
+      },
+      messageDeleted: (state, action) => {
+        const updated = action.payload;
+        const index = state.messages.findIndex((m) => m._id === updated._id);
+        if (index !== -1) {
+          state.messages[index] = updated;
+        }
       },
 
     },
@@ -196,6 +231,39 @@ const chatSlice = createSlice({
           .addCase(sendMessage.rejected, (state) => {
             state.isSending  = false;
           });
+
+          // edit message
+
+          builder
+          .addCase(editMessage.pending, (state) => {
+            console.log("pending")
+            
+          })
+          .addCase(editMessage.fulfilled, (state, action) => {
+            const updated = action.payload;
+            const index = state.messages.findIndex((m) => m._id === updated._id);
+            if (index !== -1) {
+              state.messages[index] = updated;
+            }
+          })
+          .addCase(editMessage.rejected, (state) => {
+            console.log("rejected")
+          });
+
+          builder
+          .addCase(deleteMessage.pending, (state) => {
+            console.log("pending")
+          })
+          .addCase(deleteMessage.fulfilled, (state, action) => {
+            const updated = action.payload;
+            const index = state.messages.findIndex((m) => m._id === updated._id);
+            if (index !== -1) {
+              state.messages[index] = updated;
+            }
+          })
+          .addCase(deleteMessage.rejected, (state) => {
+            console.log("rejected")
+          }); 
       },
 });
 
@@ -204,6 +272,8 @@ export const {
   setActiveTab, 
   setSelectedChat, 
   newMessageReceived,
-  resetUnread 
+  resetUnread,
+  messageEdited,
+  messageDeleted
 } = chatSlice.actions;
 export default chatSlice.reducer;

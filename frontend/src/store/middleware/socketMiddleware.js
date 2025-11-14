@@ -45,6 +45,14 @@ export const socketMiddleware = (storeAPI) => (next) => (action) => {
           }
         }
       });
+
+      socket.on("messageEdited", (message) => {
+        dispatch({ type: "chat/messageEdited", payload: message });
+      });
+      socket.on("messageDeleted", (message) => {
+        dispatch({ type: "chat/messageDeleted", payload: message });
+      });
+
       break;
 
     // Disconnect

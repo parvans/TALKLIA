@@ -1,12 +1,10 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
-import { getMessagesByUserId } from '../store/slices/chatSlice';
+import { deleteMessage, editMessage, getMessagesByUserId } from '../store/slices/chatSlice';
 import ChatHeader from './ChatHeader';
-import { ArrowDown01, ArrowDown01Icon, ArrowDownCircle, ArrowDownIcon, MessageSquareDiff, MoreVertical } from 'lucide-react';
+import { ArrowDownIcon, CircleAlert, Copy, Delete, Edit, MessageSquareDiff, MoreVertical, Trash } from 'lucide-react';
 import moment from 'moment';
-// import MessageInput from './MessageInput';
 import MessagesLoadingSkeleton from './MessagesLoadingSkeleton';
-import { useState } from 'react';
 import MessageText from './MessageText';
 
 export default function ChatContainer() {
@@ -15,11 +13,34 @@ export default function ChatContainer() {
   const {authUser} = useSelector((state) => state.auth);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const messagesEndRef = useRef(null);
-  const chatContainerRef = useRef(null);  
+  const chatContainerRef = useRef(null); 
+  const [openDropdownId, setOpenDropdownId] = useState(null);
 
   useEffect(() => {
     if (selectedChat?._id) dispatch(getMessagesByUserId(selectedChat._id));
   }, [selectedChat, dispatch]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      // If clicked inside ANY dropdown → do nothing
+      if (e.target.closest(".msg-dropdown")) return;
+
+      // Otherwise close
+      setOpenDropdownId(null);
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+
+  useEffect(() => {
+    const handleScroll = () => setOpenDropdownId(null);
+    chatContainerRef.current?.addEventListener("scroll", handleScroll);
+
+    return () =>
+      chatContainerRef.current?.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const groupedDays = messages.reduce((groups, message) => {
     const isSameorAfter = moment(message.createdAt).calendar({
@@ -72,7 +93,23 @@ export default function ChatContainer() {
     }
   }, [messages]);
 
-  
+  const handleCopyMsg = (msg) =>{
+    navigator.clipboard.writeText(msg);
+  }
+
+  const openEditModal = (msg) => {
+  const newText = prompt("Edit your message:", msg.content);
+  if (newText && newText.trim() !== "" && newText !== msg.content) {
+    dispatch(editMessage({ messageId: msg._id, content: newText.trim() }));
+    setOpenDropdownId(null);
+  }
+};
+
+const deleteTheMessage = (msg) => {
+  dispatch(deleteMessage({ messageId: msg._id}));
+  setOpenDropdownId(null);
+};
+
 
   return (
     <>
@@ -100,38 +137,77 @@ export default function ChatContainer() {
                     {group?.messages.map((msg, index2)=>{
                       const senderId = String(msg.sender && (msg.sender._id ?? msg.sender));
                       const isMine = senderId === String(authUser._id);
+                      const isLastMessage = index1 === groupArrays.length - 1 &&
+                      index2 === group.messages.length - 1;
                       
                       return(
                         <div key={`msg-${msg._id}-${index2}`} className={`chat ${isMine? "chat-end" : "chat-start" }`}>
                           
+                            <div className={`chat-bubble relative break-words whitespace-pre-wrap pr-10
+                              ${isMine ? " bg-blue-400 text-white" : " bg-slate-700 text-gray-100" }`}
+                              style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
+                              >
+                                {
+                                  msg.isDeleted ? (
+                                    <p className="text-sm text-slate-200 italic flex items-center gap-2">
+                                      <CircleAlert size={16} />
+                                      This message has been deleted
+                                      </p>
+                                  ) : (
+                                    <>
+                                      {isMine && ( 
+                                        <div className="msg-dropdown absolute top-1 right-1 z-30" data-id={msg._id}>
+                                          <button
+                                            className="p-1 rounded-full hover:bg-black/20"
+                                            onClick={() =>                                      
+                                              setOpenDropdownId(openDropdownId === msg._id ? null : msg._id)
+                                            }
+                                          >
+                                            <MoreVertical size={16} />
+                                          </button>
+        
+                                          {openDropdownId === msg._id && (
+                                            <ul  
+                                            className={`absolute right-0 w-36 bg-white text-black rounded-md shadow-lg
+                                              ${isLastMessage ? "bottom-full mb-2" : "top-full mt-2"}
+                                            `}
+                                            >
+                                              <li 
+                                                onClick={handleCopyMsg(msg.content)}
+                                                className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                                                >
+                                                <Copy size={16} /> Copy
+                                              </li>
+                                                <li
+                                                  onClick={() => openEditModal(msg)}
+                                                  className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                                                  >
+                                                  <Edit size={16} /> Edit
+                                                </li>
+                                                <li 
+                                                onClick={() => deleteTheMessage(msg)}
+                                                className="flex items-center gap-2 px-3 py-2 hover:bg-red-100 text-red-600 cursor-pointer"
+                                                >
+                                                <Trash size={16} /> Delete
+                                                </li>
+                                            </ul>
+                                          )}
+                                          </div>
+                                      )}
+                                      {msg.image && (
+                                        <img src={msg.image} alt="shared image" className='rounded-sm h-22 w-22 object-cover' />
+                                        )}
+                                        {msg.content && <MessageText content={msg.content} />}
+                                      {(msg.isEdited && !msg.isDeleted) && (
+                                        <span className="text-xs opacity-50 ml-2 italic">Edited</span>
+                                      )} 
+                                    </>
+                                    
+                                  )
+                                }
+                            </div>
                           
-                          <div className={`chat-bubble relative break-words whitespace-pre-wrap
-                            ${isMine
-                            ? "chat-bubble bg-blue-600 text-white" 
-                            : "chat-bubble bg-slate-700 text-gray-100" }`}
-                            style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
-                            >
-                              {/* dropdown */}
-                             {/* {isMine && ( <div className={`dropdown absolute top-1 ${isMine ? "-left-6" : "-right-6"}`}>
-                                <div tabIndex={0} className="p-1 rounded-full hover:bg-slate-600/50">
-                                  <MoreVertical size={16} />
-                                </div>
-                                <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
-                                  <li><a>Item 1</a></li>
-                                  <li><a>Item 2</a></li>
-                                </ul>
-                                </div>
-                            )} */}
-                            {msg.image && (
-                              <img src={msg.image} alt="shared image" className='rounded-sm h-22 w-22 object-cover' />
-                              )}
-                              {msg.content && <MessageText content={msg.content} />}
-                          </div>
-                          {/* <div className={`absolute top-1 ${isMine ? "-left-6" : "-right-6"} opacity-0 group-hover:opacity-100 transition-opacity`}>
-                            <button className="p-1 rounded-full hover:bg-slate-600/50">
-                              <MoreVertical size={16} />
-                            </button>
-                          </div> */}
+                          
                           <div className="chat-footer">
                           <time className="text-xs opacity-50">{moment(msg.createdAt).fromNow()}</time>
                           </div>
@@ -159,7 +235,7 @@ export default function ChatContainer() {
         {showScrollButton &&(
           <button 
         className='fixed bottom-[6rem] right-8 bg-blue-600 hover:bg-blue-700 
-        text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 z-50'
+        text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 z-1'
         onClick={scrollToBottom}
         >
           <ArrowDownIcon size={20} />

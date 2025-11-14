@@ -38,6 +38,7 @@ const chatSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    publicKey: { type: String },
   },
   { timestamps: true }
 );

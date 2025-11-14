@@ -156,6 +156,91 @@ export const markMessagesAsRead = async (req, res) => {
   }
 };
 
+export const editMessage = async(req, res) => {
+  try {
+    const { messageId } = req.params;
+    const { content } = req.body;
+    const userId = req.user._id;
+
+    const msg = await Message.findById(messageId);
+
+    if(!msg){
+      return res.status(400).json({ message: "Message not found" });
+    } 
+    if(!msg.sender.equals(userId)){
+      return res.status(403).json({ message: "You are not the sender of this message" });
+    }
+
+    msg.content = content;
+    msg.isEdited = true;
+    await msg.save();
+
+    const updatedMsg = await Message.findById(messageId)
+      .populate("sender", "username email profilePicture")
+      .populate("chat");
+
+    updatedMsg.chat.users.forEach((u) => {
+      const socketId = getReceiverSocketId(u.toString());
+      if (socketId) io.to(socketId).emit("messageEdited", updatedMsg);
+    });
+
+    res.json(updatedMsg);
+  } catch (error) {
+    console.log("Error in editMessage:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
+
+export const deleteMessage = async(req, res) => {
+  try {
+    const { messageId } = req.params;
+    const userId = req.user._id;
+
+    const msg = await Message.findById(messageId).populate("chat");
+
+    if(!msg){
+      return res.status(400).json({ message: "Message not found" });
+    } 
+    if(!msg.sender.equals(userId)){
+      return res.status(403).json({ message: "You are not the sender of this message" });
+    }
+
+    if(msg.messageType === "image"){
+      await cloudinary.uploader.destroy(msg.image.split("/").pop().split(".")[0]);
+    }
+
+    await Message.findByIdAndUpdate(messageId, { isDeleted: true });
+
+    const deletedMsg = await Message.findById(messageId)
+    .populate("sender", "username email profilePicture")
+    .populate("chat");
+
+    // Send real-time update to all chat users
+    msg.chat.users.forEach((u) => {
+      const socketId = getReceiverSocketId(u.toString());
+      if (socketId) {
+        io.to(socketId).emit("messageDeleted", deletedMsg);
+      }
+    });
+
+    res.json({ success: true, deletedMsg });
+
+  } catch (error) {
+    console.log("Error in deleteMessage:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
+
+
+
+
+
+
+
+
+
 export const deleteAllMessages = async (req, res) => {
   try {
     const { chatId } = req.params;
