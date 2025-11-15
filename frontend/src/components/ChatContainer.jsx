@@ -196,8 +196,20 @@ const deleteTheMessage = (msg) => {
                                       )}
                                       {msg.image && (
                                         <img src={msg.image} alt="shared image" className='rounded-sm h-22 w-22 object-cover' />
-                                        )}
-                                        {msg.content && <MessageText content={msg.content} />}
+                                      )}
+                                      {msg.audio && (
+                                        <audio
+                                          controls
+                                          src={msg.audio}
+                                          className="w-70 mt-2 h-10"
+                                          controlsList="nodownload"
+                                        />
+                                        // <VoiceMessage 
+                                        //   audioUrl={msg.audio}
+                                        //   duration={msg.audioDuration}
+                                        // />
+                                      )}
+                                      {msg.content && <MessageText content={msg.content} />}
                                       {(msg.isEdited && !msg.isDeleted) && (
                                         <span className="text-xs opacity-50 ml-2 italic">Edited</span>
                                       )} 

@@ -13,13 +13,13 @@ const messageSchema = new mongoose.Schema({
     },
     content: { 
         type: String, 
-        required: true,
+        //required: true,
         trim: true,
       // maxlength: 2000
     },
     messageType: {
       type: String,
-      enum: ["text", "image", "file"],
+      enum: ["text", "image", "file", "audio", "video"],
       default: "text",
     },
     readBy: [
@@ -40,6 +40,8 @@ const messageSchema = new mongoose.Schema({
       default: "pending",
     },
     image: { type: String },
+    audio: { type: String },
+    audioDuration: { type: Number },
     isEdited: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
 },

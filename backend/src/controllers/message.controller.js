@@ -43,13 +43,13 @@ export const sendMessage = async(req, res) => {
         const validateId = mongoose.Types.ObjectId;
         const senderId = req.user._id;
         const { chatId } = req.params;
-        const {content, image, messageType } = req.body;
+        const {content, image, messageType, audio } = req.body;
 
         if (!validateId.isValid(chatId)) {
           return res.status(400).json({ message: "Invalid chat ID" });
         }
 
-        if(!content && !image) return res.status(400).json({ message: "Content or Image is required" });
+        // if(!content && !image) return res.status(400).json({ message: "Content or Image is required" });
 
         // if(myId.equals(id)) return res.status(400).json({ message: "You cannot send a message to yourself" });
         
@@ -60,18 +60,32 @@ export const sendMessage = async(req, res) => {
         
         let ImageURL;
         if(image){
-            const uploadRes = await cloudinary.uploader.upload(image,{
-              folder: "chat_app/messages",
-            });
-            ImageURL = uploadRes.secure_url; 
+          const uploadRes = await cloudinary.uploader.upload(image,{
+            folder: "chat_app/messages",
+          });
+          ImageURL = uploadRes.secure_url; 
         }
+
+        let audioURL;
+        if (req.body.audio) {
+          const uploadRes = await cloudinary.uploader.upload(req.body.audio, {
+            resource_type: "video",   // IMPORTANT — audio counts as "video"
+            folder: "chat_app/voice",
+          });
+
+          audioURL = uploadRes.secure_url;
+        }
+
+
 
         const newMessage = new Message({
             sender: senderId,
             chat: chatId,
             content,
             image: ImageURL,
-            messageType: messageType || (image ? "image" : "text"),
+            audio: audioURL,
+            audioDuration: req.body.audioDuration,
+            messageType: audioURL ? "audio" : (image ? "image" : "text"),
             status: "sent"
         });
         await newMessage.save();
@@ -208,6 +222,10 @@ export const deleteMessage = async(req, res) => {
 
     if(msg.messageType === "image"){
       await cloudinary.uploader.destroy(msg.image.split("/").pop().split(".")[0]);
+    }
+
+    if(msg.messageType === "audio"){
+      await cloudinary.uploader.destroy(msg.audio.split("/").pop().split(".")[0]);
     }
 
     await Message.findByIdAndUpdate(messageId, { isDeleted: true });
