@@ -2,6 +2,8 @@
 import { io } from "socket.io-client";
 import { setOnlineUsers } from "../slices/authSlice";
 import { newMessageReceived } from "../slices/chatSlice";
+import avatarImg from "../../assets/images/avatar.png";
+import appIcon from "../../assets/images/appIcon.png";
 
 const BASEURL = import.meta.env.MODE === "development"
     ? "http://localhost:5000"
@@ -42,6 +44,22 @@ export const socketMiddleware = (storeAPI) => (next) => (action) => {
             notificationSound.currentTime = 0;
             notificationSound.play().catch((error)=>console.log("Audio play failed",error));
 
+          }
+          if (Notification.permission === "granted") {
+            new Notification(message.sender.username, {
+              body: message.messageType === "text"
+                ? message.content
+                : message.messageType === "image"
+                ? "📷 Sent an image"
+                : message.messageType === "audio"
+                ? "🎤 Sent a voice message"
+                : "New message",
+              icon: message.sender.profilePicture || avatarImg,
+              silent: true,
+              tag: message._id,
+              badge:appIcon,
+              viibrate: [200, 100, 200]
+            });
           }
         }
       });

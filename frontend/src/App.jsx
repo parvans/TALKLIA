@@ -24,6 +24,26 @@ export default function App() {
     }
   }, [authUser, dispatch]);
 
+  const requestNotificationPermission = async () => {
+    if (!("Notification" in window)) {
+      console.log("This browser does not support notifications");
+      return;
+    }
+
+    const permission = await Notification.requestPermission();
+
+    if (permission === "granted") {
+      console.log("Notification permission granted");
+    } else {
+      console.log("Notification permission denied");
+    }
+  };
+
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
+
+
   if(isCheckingAuth) return <PageLoader/>
   return (
     <div className="min-h-screen bg-gradient-radial from-cyan-500 to-blue-500 relative flex items-center justify-center p-4 overflow-hidden">
