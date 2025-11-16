@@ -7,7 +7,7 @@ import appIcon from "../../assets/images/appIcon.png";
 
 const BASEURL = import.meta.env.MODE === "development"
     ? "http://localhost:5000"
-    : "/";
+    : "https://talklia-3ttpqzch2-parvans-projects.vercel.app";
 
 let socket = null;
 
