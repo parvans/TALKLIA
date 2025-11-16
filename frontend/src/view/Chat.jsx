@@ -5,7 +5,7 @@ import BorderAnimatedContainer from '../components/BorderAnimatedContainer';
 import ActiveTabSwitch from '../components/ActiveTabSwitch';
 import ChatsList from '../components/ChatsList';
 import ContactsList from '../components/ContactsList';
-import ProfileHeader from '../components/ProfileHeader.JSX';
+import ProfileHeader from '../components/ProfileHeader.jsx';
 import WelcomeScreen from '../components/WelcomeScreen';
 import ChatContainer from '../components/ChatContainer';
 import { useEffect } from 'react';
