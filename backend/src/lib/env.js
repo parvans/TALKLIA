@@ -12,4 +12,6 @@ export const ENV = {
     ARCJET_KEY: process.env.ARCJET_KEY,
     ARCJET_ENV: process.env.ARCJET_ENV,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    TURN_SERVER: process.env.TURN_SERVER,
+    TURN_SECRET: process.env.TURN_SECRET,
 }

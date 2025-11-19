@@ -1,5 +1,5 @@
 import express from 'express';
-import { deleteAllMessages, deleteMessage, editMessage, getAllContacts, getChats, getMessagesByUserId, markMessagesAsRead, sendMessage } from '../controllers/message.controller.js';
+import { createCallMessage, deleteAllMessages, deleteMessage, editMessage, getAllContacts, getChats, getMessagesByUserId, markMessagesAsRead, sendMessage } from '../controllers/message.controller.js';
 import { protectRoute } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
@@ -17,6 +17,9 @@ router.put('/mark-read/:chatId', protectRoute, markMessagesAsRead);
 router.put('/edit/:messageId', protectRoute, editMessage);
 
 router.put('/delete/:messageId', protectRoute, deleteMessage);
+
+router.post("/call/:chatId", protectRoute, createCallMessage);
+
 
 
 

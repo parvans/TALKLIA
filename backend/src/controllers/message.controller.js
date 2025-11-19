@@ -250,6 +250,45 @@ export const deleteMessage = async(req, res) => {
   }
 }
 
+export const createCallMessage = async (req, res) => {
+  try {
+    const senderId = req.user._id;
+    const { chatId } = req.params;
+    const { callType, callStatus, callDuration } = req.body;
+
+    const msg = await Message.create({
+      sender: senderId,
+      chat: chatId,
+      messageType: "call",
+      callType,
+      callStatus,
+      callDuration
+    });
+
+    await msg.save();
+
+    // update latest message in chat
+    await Chat.findByIdAndUpdate(chatId, { latestMessage: msg._id });
+
+    const fullMsg = await Message.findById(msg._id)
+      .populate("sender", "username email profilePicture")
+      .populate("chat");
+
+    // Emit to other user
+    fullMsg.chat.users.forEach(u => {
+      const socketId = getReceiverSocketId(u.toString());
+      if (socketId) io.to(socketId).emit("callLog", fullMsg);
+    });
+
+    res.json(fullMsg);
+
+  } catch (error) {
+    console.error("Call log error", error);
+    res.status(500).json({ message: "Internal error" });
+  }
+};
+
+
 
 
 

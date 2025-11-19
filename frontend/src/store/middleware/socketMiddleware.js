@@ -25,6 +25,8 @@ export const socketMiddleware = (storeAPI) => (next) => (action) => {
       socket = io(BASEURL, { withCredentials: true });
       socket.connect();
 
+      window.socket = socket; // ⬅ Make it globally accessible
+
       // Handle incoming events
       socket.on("onlineUsers", (userIds) => {
         dispatch(setOnlineUsers(userIds));

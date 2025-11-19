@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth.route.js';
 import messageRoutes from './routes/message.route.js';
 import chatRoutes from './routes/chat.route.js';
+import webrtcRoutes from "./routes/webrtc.routes.js";
 import connectDB from './lib/db.js';
 import colors from 'colors';
 import path from 'path';
@@ -25,6 +26,7 @@ app.use(cors({
 app.use("/api/auth", authRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/webrtc", webrtcRoutes);
 
 // if(process.env.NODE_ENV === 'production'){
 //     app.use(express.static(path.join(__dirname, '/frontend/dist')));

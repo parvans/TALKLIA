@@ -6,7 +6,9 @@ import { ArrowDownIcon, CircleAlert, Copy, Delete, Edit, MessageSquareDiff, More
 import moment from 'moment';
 import MessagesLoadingSkeleton from './MessagesLoadingSkeleton';
 import MessageText from './MessageText';
-
+import useWebRTC from '../hooks/useWebRTC';
+import CallUI from './CallUI';
+import { useCallback } from 'react';
 export default function ChatContainer() {
   const dispatch = useDispatch();
   const { selectedChat, messages, isMessagesLoading } = useSelector((state) => state.chat);
@@ -15,6 +17,22 @@ export default function ChatContainer() {
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null); 
   const [openDropdownId, setOpenDropdownId] = useState(null);
+  const socket = window.socket;
+  const {
+    startCall,
+    acceptCall,
+    rejectCall,
+    endCall,
+    localStream,
+    remoteStream,
+    incomingCall,
+    isCalling,
+    isInCall,
+  } = useWebRTC({
+    userId: selectedChat?.users.find(u => u._id !== authUser._id)._id,
+    chatId: selectedChat?._id,
+    socket
+  });
 
   useEffect(() => {
     if (selectedChat?._id) dispatch(getMessagesByUserId(selectedChat._id));
@@ -111,9 +129,26 @@ const deleteTheMessage = (msg) => {
 };
 
 
+const onAudioCall = useCallback(() => startCall("audio"), [startCall]);
+const onVideoCall = useCallback(() => startCall("video"), [startCall]);
+
+
   return (
     <>
-    <ChatHeader user={selectedChat} />
+    <ChatHeader
+      onAudioCall={onAudioCall}
+      onVideoCall={onVideoCall}
+    />
+    <CallUI
+        incomingCall={incomingCall}
+        isCalling={isCalling}
+        isInCall={isInCall}
+        localStream={localStream}
+        remoteStream={remoteStream}
+        acceptCall={acceptCall}
+        rejectCall={rejectCall}
+        endCall={endCall}
+      />
     <div 
       ref={chatContainerRef} 
       className="flex-1 px-6 overflow-y-auto py-8 scroll-smooth"
@@ -139,9 +174,39 @@ const deleteTheMessage = (msg) => {
                       const isMine = senderId === String(authUser._id);
                       const isLastMessage = index1 === groupArrays.length - 1 &&
                       index2 === group.messages.length - 1;
+                      const messageType = msg.messageType;
                       
                       return(
-                        <div key={`msg-${msg._id}-${index2}`} className={`chat ${isMine? "chat-end" : "chat-start" }`}>
+                        <>
+                        {messageType === "call" ? (
+                          <div key={`call-${msg._id}-${index2}`} className="chat flex justify-center items-center">
+                            <div className="chat-bubble relative break-words whitespace-pre-wrap pr-10 
+                              bg-slate-700 text-gray-100"
+                              style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
+                              >
+                                <p className="text-sm text-slate-200 italic flex items-center gap-2">
+                                  <CircleAlert size={16} />
+                                  This message is a call
+                                  </p>
+
+                                <p className="text-sm text-slate-200 italic flex items-center gap-2">
+                                  <CircleAlert size={16} />
+                                  Call Status: {msg.callStatus}
+                                  </p>
+
+                                <p className="text-sm text-slate-200 italic flex items-center gap-2">
+                                  <CircleAlert size={16} />
+                                  Call Duration: {msg.callDuration} seconds
+                                  </p>
+
+                                <p className="text-sm text-slate-200 italic flex items-center gap-2">
+                                  <CircleAlert size={16} />
+                                  Call Type: {msg.callType}
+                                  </p>
+                            </div>
+                          </div>
+                        ):(
+                          <div key={`msg-${msg._id}-${index2}`} className={`chat ${isMine? "chat-end" : "chat-start" }`}>
                           
                             <div className={`chat-bubble relative break-words whitespace-pre-wrap pr-10
                               ${isMine ? " bg-blue-400 text-white" : " bg-slate-700 text-gray-100" }`}
@@ -224,6 +289,8 @@ const deleteTheMessage = (msg) => {
                           <time className="text-xs opacity-50">{moment(msg.createdAt).fromNow()}</time>
                           </div>
                         </div>
+                        )}
+                        </>
                     )})}
                   </div>
                 </div>
