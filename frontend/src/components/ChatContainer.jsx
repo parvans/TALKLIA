@@ -28,6 +28,7 @@ export default function ChatContainer() {
     incomingCall,
     isCalling,
     isInCall,
+    callType
   } = useWebRTC({
     userId: selectedChat?.users.find(u => u._id !== authUser._id)._id,
     chatId: selectedChat?._id,
@@ -148,6 +149,7 @@ const onVideoCall = useCallback(() => startCall("video"), [startCall]);
         acceptCall={acceptCall}
         rejectCall={rejectCall}
         endCall={endCall}
+        callType={callType}
       />
     <div 
       ref={chatContainerRef} 
